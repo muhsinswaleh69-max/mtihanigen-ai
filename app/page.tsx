@@ -11,58 +11,38 @@ const subjectsByGrade: Record<string, string[]> = {
   "Grade 7": ["Mathematics", "English", "Kiswahili", "Integrated Science", "Social Studies", "Agriculture and Nutrition", "Pre-Technical Studies", "CRE", "IRE", "HRE", "Computer Studies"],
   "Grade 8": ["Mathematics", "English", "Kiswahili", "Integrated Science", "Social Studies", "Agriculture and Nutrition", "Pre-Technical Studies", "CRE", "IRE", "HRE", "Computer Studies"],
   "Grade 9": ["Mathematics", "English", "Kiswahili", "Integrated Science", "Social Studies", "Agriculture and Nutrition", "Pre-Technical Studies", "CRE", "IRE", "HRE", "Computer Studies"],
-  "Grade 10": ["Mathematics", "English", "Kiswahili", "Biology", "Chemistry", "Physics", "History", "Geography", "CRE", "IRE", "HRE", "Business", "Agriculture", "Computer Studies"],
-  "Grade 11": ["Mathematics", "English", "Kiswahili", "Biology", "Chemistry", "Physics", "History", "Geography", "CRE", "IRE", "HRE", "Business", "Agriculture", "Computer Studies"],
-  "Grade 12": ["Mathematics", "English", "Kiswahili", "Biology", "Chemistry", "Physics", "History", "Geography", "CRE", "IRE", "HRE", "Business", "Agriculture", "Computer Studies"],
+  "Grade 10": ["Mathematics", "English", "Kiswahili", "Biology", "Chemistry", "Physics", "History", "Geography", "CRE", "IRE", "HRE", "Business", "Agriculture"],
+  "Grade 11": ["Mathematics", "English", "Kiswahili", "Biology", "Chemistry", "Physics", "History", "Geography", "CRE", "IRE", "HRE", "Business", "Agriculture"],
+  "Grade 12": ["Mathematics", "English", "Kiswahili", "Biology", "Chemistry", "Physics", "History", "Geography", "CRE", "IRE", "HRE", "Business", "Agriculture"],
 };
 
 const suggestedTopics: Record<string, string[]> = {
   "Kiswahili": ["Sarufi", "Ufahamu", "Insha", "Fasihi"],
-  "Mathematics": ["Algebra", "Geometry", "Triangles", "Logarithms"],
-  "CRE": ["Creation", "Old Testament", "Life of Jesus"],
-  "IRE": ["Quran", "Hadith", "Fiqh", "Tawheed", "Akhlaq"],
-  "HRE": ["Dharma", "Karma", "Hindu Festivals", "Vedas"],
+  "Mathematics": ["Algebra", "Geometry", "Triangles"],
+  "CRE": ["Creation", "Old Testament"],
+  "IRE": ["Quran", "Hadith", "Fiqh", "Tawheed"],
+  "HRE": ["Dharma", "Karma", "Hindu Festivals"],
 };
 
 function RealDiagram({ desc, figNum }: { desc: string, figNum: number }) {
   const d = desc.toLowerCase();
-  let svg: any = null;
-  if (d.includes("triangle")) {
-    const AB = desc.match(/AB\s*=\s*(\d+)/i)?.[1] || "5";
-    const BC = desc.match(/BC\s*=\s*(\d+)/i)?.[1] || "7";
-    const AC = desc.match(/AC\s*=\s*(\d+)/i)?.[1] || "8";
-    svg = (<svg viewBox="0 0 340 200" className="w-full h-[180px] bg-white"><polygon points="50,150 200,150 90,40" fill="white" stroke="black" strokeWidth="2.5"/><text x="30" y="160" fontSize="13" fontWeight="bold">A</text><text x="205" y="160" fontSize="13" fontWeight="bold">B</text><text x="80" y="25" fontSize="13" fontWeight="bold">C</text><text x="115" y="165" fontSize="11">{AB} cm</text><text x="150" y="85" fontSize="11">{BC} cm</text><text x="35" y="95" fontSize="11">{AC} cm</text></svg>);
-  } else if (d.includes("circle")) {
-    const r = desc.match(/(\d+)\s*cm/)?.[1] || "7";
-    svg = (<svg viewBox="0 0 300 160" className="w-full h-[160px] bg-white"><circle cx="150" cy="80" r="55" fill="none" stroke="black" strokeWidth="2.5"/></svg>);
-  } else {
-    svg = (<svg viewBox="0 0 340 140" className="w-full h-[140px] bg-white"><rect x="20" y="20" width="300" height="90" rx="8" fill="white" stroke="black" strokeWidth="2"/><text x="170" y="70" textAnchor="middle" fontSize="12" fontWeight="bold">{desc.slice(0,50)}</text></svg>);
-  }
-  return (<div className="my-3 border-[2px] border-black bg-white"><div className="bg-black text-white text-[10px] font-bold px-2 py-1">DIAGRAM {figNum}</div><div className="p-1 flex justify-center">{svg}</div></div>);
+  let svg = d.includes("triangle")? (<svg viewBox="0 0 340 200" width="100%" height="180"><polygon points="50,150 200,150 90,40" fill="white" stroke="black" strokeWidth="2.5"/></svg>) : (<svg viewBox="0 0 340 140" width="100%" height="130"><rect x="20" y="20" width="300" height="90" rx="8" fill="white" stroke="black" strokeWidth="2"/><text x="170" y="70" textAnchor="middle" fontSize="12">{desc.slice(0,50)}</text></svg>);
+  return (<div style={{border:'2px solid black', margin:'12px 0'}}><div style={{background:'black', color:'white', fontSize:'10px', padding:'4px 8px'}}>DIAGRAM {figNum}</div><div style={{padding:'6px', background:'white', textAlign:'center'}}>{svg}</div></div>);
 }
 
-// NEW: Standardized Answer Space Component
 function AnswerSpace({ grade }: { grade: string }) {
   const isLower = ["Grade 1","Grade 2","Grade 3","Grade 4"].includes(grade);
-  const lineCount = isLower? 4 : 6; // Lower grades need less space
-  const workingHeight = isLower? "h-12" : "h-20";
-
+  const lineCount = isLower? 4 : 6;
   return (
-    <div className="mt-2 mb-8 break-inside-avoid">
-      {/* Working Space - dotted */}
-      <div className="flex justify-between items-center mb-1">
-        <span className="text-[9px] font-bold text-gray-500 uppercase tracking-wider">Working Space</span>
-        <span className="text-[8px] text-gray-400">Rough work - will not be marked</span>
+    <div style={{marginTop:'8px', marginBottom:'32px', pageBreakInside:'avoid'}}>
+      <div style={{display:'flex', justifyContent:'space-between', fontSize:'9px', fontWeight:'bold', color:'#555', marginBottom:'3px', textTransform:'uppercase'}}>
+        <span>Working Space</span><span style={{fontWeight:'normal', fontSize:'8px'}}>Rough work - will not be marked</span>
       </div>
-      <div className={`border border-dashed border-gray-400 ${workingHeight} w-full bg-gray-50/30 mb-3`}></div>
-
-      {/* Answer Space - lined */}
-      <div className="flex justify-between items-center mb-1">
-        <span className="text-[9px] font-bold text-gray-700 uppercase tracking-wider">Answer Space</span>
-      </div>
-      <div className="w-full border border-gray-300">
+      <div className="working-box" style={{border:'1px dashed #888', height:isLower?'48px':'72px', width:'100%', background:'#f9f9f9', marginBottom:'10px'}}></div>
+      <div style={{fontSize:'9px', fontWeight:'bold', color:'#333', marginBottom:'3px', textTransform:'uppercase'}}>Answer Space</div>
+      <div className="answer-box" style={{border:'1px solid #999', width:'100%'}}>
         {Array.from({length: lineCount}).map((_, i) => (
-          <div key={i} className="h-7 border-b border-gray-300 last:border-b-0 bg-white"></div>
+          <div key={i} className="answer-line" style={{height:'28px', borderBottom: i===lineCount-1? 'none' : '1px solid #bbb', background:'white'}}></div>
         ))}
       </div>
     </div>
@@ -81,13 +61,12 @@ export default function Home() {
   const [difficulty, setDifficulty] = useState("Medium");
   const [structure, setStructure] = useState("Structured");
   const [numQ, setNumQ] = useState(20);
-  const [includeSpaces, setIncludeSpaces] = useState(true); // NEW TOGGLE
+  const [includeSpaces, setIncludeSpaces] = useState(true);
   const [exam, setExam] = useState("");
   const [loading, setLoading] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [paperCode, setPaperCode] = useState("");
   const printRef = useRef<HTMLDivElement>(null);
-
   const firstName = schoolName.split(" ")[0] || "SCHOOL";
   const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => { const file = e.target.files?.[0]; if(file){ const reader = new FileReader(); reader.onload = (ev) => setSchoolLogo(ev.target?.result as string); reader.readAsDataURL(file); } };
   const getAllowedGrades = () => {
@@ -98,73 +77,57 @@ export default function Home() {
     return Object.keys(subjectsByGrade);
   };
   useEffect(() => { const allowed = getAllowedGrades(); if(!allowed.includes(grade)) setGrade(allowed[0]); }, [schoolLevel]);
-  useEffect(() => { const first = subjectsByGrade[grade]?.[0]; if(first){ setSubject(first); const sug = suggestedTopics[first]||[]; setTopics(sug.slice(0,2)); } }, [grade]);
-  useEffect(() => { const sug = suggestedTopics[subject]||[]; setTopics(sug.length>0? sug.slice(0,2):[]); }, [subject]);
   const addTopic = () => { if (topicInput.trim() &&!topics.includes(topicInput.trim())) { setTopics([...topics, topicInput.trim()]); setTopicInput(""); } };
   const removeTopic = (t: string) => setTopics(topics.filter(x => x!== t));
-
   const generateExam = async () => {
     setLoading(true); setExam(""); setIsEditing(false);
     const code = `MG-${grade.replace("Grade ","G")}-${subject.substring(0,3).toUpperCase()}-${new Date().toISOString().slice(0,10).replace(/-/g,"")}-${Math.floor(Math.random()*900)+100}`;
     setPaperCode(code);
-    try {
-      const res = await fetch("/api/generate", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ subject, grade, topic: topics.join(", ") || subject, numQ, examType, difficulty, structure, schoolName }) });
-      const data = await res.json(); setExam(data.exam);
-    } catch { setExam("Error generating exam."); }
+    try { const res = await fetch("/api/generate", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ subject, grade, topic: topics.join(", ") || subject, numQ, examType, difficulty, structure, schoolName }) }); const data = await res.json(); setExam(data.exam); } catch { setExam("Error generating exam."); }
     setLoading(false);
   };
 
+  // FIXED PRINT - INCLUDES BOXES CSS
   const handleDownloadPDF = () => {
     if(!printRef.current) return;
     const content = printRef.current.innerHTML;
     const win = window.open('', '', 'height=900,width=800');
     if(win){
       win.document.write(`<html><head><title>${schoolName}</title><style>
-        body{font-family: Times New Roman, serif; margin:0; color:black;}
-     .cover-page{min-height:100vh;display:flex;flex-direction:column;justify-content:space-between;align-items:center;text-align:center;padding:30px 25px;box-sizing:border-box;page-break-after:always;position:relative;overflow:hidden}
-     .watermark{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) rotate(-30deg);font-size:75px;font-weight:900;color:rgba(0,0,0,0.06);letter-spacing:4px;pointer-events:none;z-index:0;white-space:nowrap}
-     .school-badge{width:65px!important;height:65px!important;max-width:65px!important;max-height:65px!important;object-fit:contain;display:block;margin:0 auto;}
-     .questions-page{padding:25px 30px; font-size:13px; line-height:1.6; position:relative;}
-     .question-block{page-break-inside:avoid; margin-bottom:12px;}
-     .answer-space-lines{border:1px solid #999;}
+        body{font-family: 'Times New Roman', Times, serif; margin:0; color:black; -webkit-print-color-adjust: exact;}
+       .cover-page{min-height:100vh;display:flex;flex-direction:column;justify-content:space-between;align-items:center;text-align:center;padding:30px 25px;box-sizing:border-box;page-break-after:always;position:relative;overflow:hidden}
+       .watermark{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) rotate(-30deg);font-size:75px;font-weight:900;color:rgba(0,0,0,0.06);letter-spacing:4px;pointer-events:none;z-index:0;white-space:nowrap}
+       .school-badge{width:65px!important;height:65px!important;max-width:65px!important;max-height:65px!important;object-fit:contain;display:block;margin:0 auto;}
+       .questions-page{padding:25px 30px; font-size:13px; line-height:1.7; position:relative;}
+       .question-block{page-break-inside:avoid; margin-bottom:18px;}
+        /* THIS FIXES YOUR ISSUE */
+       .working-box{border:1px dashed #666!important; height:70px; width:100%; background:#fafafa!important; display:block; margin:4px 0 10px 0;}
+       .answer-box{border:1px solid #000!important; width:100%; display:block;}
+       .answer-line{height:28px!important; border-bottom:1px solid #bbb!important; background:white!important; display:block;}
         @media print{
-       .cover-page{height:100vh;}
-       .school-badge{width:55px!important;height:55px!important;}
-       .question-block{page-break-inside:avoid;}
+         .cover-page{height:100vh;}
+         .school-badge{width:55px!important;height:55px!important;}
+         .working-box,.answer-box,.answer-line{-webkit-print-color-adjust: exact; print-color-adjust: exact;}
         }
       </style></head><body>${content}</body></html>`);
-      win.document.close(); win.focus(); setTimeout(()=>win.print(), 400);
+      win.document.close(); win.focus(); setTimeout(()=>win.print(), 500);
     }
   };
 
-  // NEW: Parse questions and add spaces
   const renderExamWithSpaces = (text: string) => {
     if (!text) return null;
-    // Split by numbered questions
-    const questionBlocks = text.split(/(?=\n?\d+\.\s)/g).filter(b => b.trim().length > 0);
-
-    return questionBlocks.map((block, idx) => {
+    const blocks = text.split(/(?=\n?\d+\.\s)/g).filter(b => b.trim().length > 0);
+    return blocks.map((block, idx) => {
       let fig = 0;
       const parts = block.split(/(\[DIAGRAM:.*?\])/g);
-      const renderedParts = parts.map((part, i) => {
+      const rendered = parts.map((part, i) => {
         if (part.startsWith("[DIAGRAM:")) { fig++; const desc = part.replace("[DIAGRAM:", "").replace("]", "").trim(); return <RealDiagram key={i} desc={desc} figNum={fig} />; }
-        else {
-          let cleaned = part.replace(/\\\(/g, "").replace(/\\\)/g, "").replace(/\\\[/g, "").replace(/\\\]/g, "").replace(/\\x\^2/g, "x²").replace(/\^2/g, "²").replace(/_2/g, "₂").replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>").replace(/\*/g, "").replace(/\n/g, "<br/>");
-          return <span key={i} dangerouslySetInnerHTML={{ __html: cleaned }} />;
-        }
+        else { let cleaned = part.replace(/\\\(/g, "").replace(/\\\)/g, "").replace(/\\\[/g, "").replace(/\\\]/g, "").replace(/\^2/g, "²").replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>").replace(/\*/g, "").replace(/\n/g, "<br/>"); return <span key={i} dangerouslySetInnerHTML={{ __html: cleaned }} />; }
       });
-
-      return (
-        <div key={idx} className="question-block">
-          <div className="mb-1">{renderedParts}</div>
-          {includeSpaces && <AnswerSpace grade={grade} />}
-        </div>
-      );
+      return (<div key={idx} className="question-block"><div>{rendered}</div>{includeSpaces && <AnswerSpace grade={grade} />}</div>);
     });
   };
 
-  const isKiswahili = subject.toLowerCase().includes("kiswahili");
-  const durationText = examType==="End term"? (isKiswahili?"DAKIKA 40":"40 MINUTES") : examType==="Mid-term"? (isKiswahili?"SAA 1":"1 HOUR") : (isKiswahili?"SAA 1 NA DAKIKA 30":"1 HOUR 30 MINUTES");
   const dateText = new Date().toLocaleDateString('en-GB', { day:'2-digit', month:'long', year:'numeric' });
 
   return (
@@ -174,44 +137,38 @@ export default function Home() {
         <div className="bg-white rounded-xl p-6 shadow border">
           <h2 className="text-xl font-bold text-[#0d3d4f]">Create New Exam</h2>
           <label className="text-xs font-bold mt-4 block">🏫 SCHOOL NAME</label><input value={schoolName} onChange={e=>setSchoolName(e.target.value.toUpperCase())} className="w-full border p-2.5 rounded-lg mt-1 font-bold mb-2" />
-          <label className="text-xs font-bold block">🛡️ SCHOOL BADGE</label><div className="flex items-center gap-3 mt-1 mb-3"><input type="file" accept="image/*" onChange={handleLogoUpload} className="text-sm border p-2 rounded-lg w-full" />{schoolLogo && <img src={schoolLogo} alt="badge" className="school-badge w-12 h-12 rounded border object-contain bg-white"/>}</div>
+          <label className="text-xs font-bold block">🛡️ SCHOOL BADGE</label><div className="flex items-center gap-3 mt-1 mb-3"><input type="file" accept="image/*" onChange={handleLogoUpload} className="text-sm border p-2 rounded-lg w-full" />{schoolLogo && <img src={schoolLogo} alt="badge" style={{width:'48px', height:'48px', objectFit:'contain'}} className="rounded border"/>}</div>
           <label className="text-xs font-bold">CLASS / GRADE</label><select value={grade} onChange={e=>setGrade(e.target.value)} className="w-full border p-2.5 rounded-lg mt-1 bg-gray-50 mb-2">{getAllowedGrades().map(g=><option key={g}>{g}</option>)}</select>
           <label className="text-xs font-bold">SUBJECT</label><select value={subject} onChange={e=>setSubject(e.target.value)} className="w-full border p-2.5 rounded-lg mt-1 bg-gray-50 mb-2">{subjectsByGrade[grade]?.map(s=><option key={s}>{s}</option>)}</select>
-          <label className="text-xs font-bold">TOPIC</label><div className="flex gap-2 mt-1 mb-2"><input list="topic-suggestions" value={topicInput} onChange={e=>setTopicInput(e.target.value)} onKeyDown={e=>e.key==='Enter'&&addTopic()} placeholder="Enter topic" className="flex-1 border p-2.5 rounded-lg bg-gray-50" /><datalist id="topic-suggestions">{(suggestedTopics[subject]||[]).map(t=><option key={t} value={t}/>)}</datalist><button onClick={addTopic} className="bg-[#0d3d4f] text-white px-5 rounded-lg">Add</button></div><div className="flex flex-wrap gap-2 mb-3">{topics.map(t=><span key={t} className="bg-blue-100 px-3 py-1 rounded-full text-sm">{t} <button onClick={()=>removeTopic(t)}>×</button></span>)}</div>
-
-          {/* NEW TOGGLE */}
-          <div className="flex items-center justify-between bg-yellow-50 border border-yellow-200 p-3 rounded-lg mb-3">
-            <div><div className="text-xs font-bold">📝 ANSWER SPACES</div><div className="text-[10px] text-gray-600">Working + Lined answer area per question</div></div>
-            <button onClick={()=>setIncludeSpaces(!includeSpaces)} className={`px-4 py-1.5 rounded-full text-xs font-bold ${includeSpaces?'bg-green-600 text-white':'bg-gray-300'}`}>{includeSpaces?'ON - Enabled':'OFF'}</button>
+          <label className="text-xs font-bold">TOPIC</label><div className="flex gap-2 mt-1 mb-2"><input value={topicInput} onChange={e=>setTopicInput(e.target.value)} placeholder="Enter topic" className="flex-1 border p-2.5 rounded-lg bg-gray-50" /><button onClick={addTopic} className="bg-[#0d3d4f] text-white px-5 rounded-lg">Add</button></div><div className="flex flex-wrap gap-2 mb-3">{topics.map(t=><span key={t} className="bg-blue-100 px-3 py-1 rounded-full text-sm">{t} <button onClick={()=>removeTopic(t)}>×</button></span>)}</div>
+          <div className="flex items-center justify-between bg-green-50 border border-green-200 p-3 rounded-lg mb-3">
+            <div><div className="text-xs font-bold">📝 ANSWER SPACES (Standardized)</div><div className="text-[10px] text-gray-600">Working + Lined answer per question</div></div>
+            <button onClick={()=>setIncludeSpaces(!includeSpaces)} className={`px-4 py-1.5 rounded-full text-xs font-bold ${includeSpaces?'bg-green-600 text-white':'bg-gray-300'}`}>{includeSpaces?'ON':'OFF'}</button>
           </div>
-
-          <label className="text-xs font-bold">TYPE</label><div className="flex gap-2 mb-2 mt-1">{["Opener","Mid-term","End term"].map(type=><button key={type} onClick={()=>setExamType(type)} className={`flex-1 py-2 rounded-lg border text-sm ${examType===type?'bg-[#0d3d4f] text-white':'bg-gray-100'}`}>{type}</button>)}</div>
           <label className="text-xs font-bold">QUESTIONS</label><div className="flex items-center gap-3 mt-1 mb-4"><button onClick={()=>setNumQ(Math.max(5,numQ-1))} className="border w-9 h-9 rounded-lg">−</button><span className="border px-5 py-2 rounded-lg font-bold">{numQ}</span><button onClick={()=>setNumQ(Math.min(50,numQ+1))} className="border w-9 h-9 rounded-lg">+</button></div>
           <button onClick={generateExam} disabled={loading} className="w-full bg-blue-600 text-white py-3.5 rounded-xl font-bold">{loading?"Generating...":"✨ Generate Exam"}</button>
         </div>
-
         <div className="bg-white rounded-xl shadow border overflow-hidden">
-          <div className="flex justify-between items-center p-4 border-b"><h2 className="font-bold">Preview</h2><div className="flex gap-2"><button onClick={()=>setIsEditing(!isEditing)} className={`border text-sm px-3 py-1.5 rounded-lg ${isEditing?'bg-yellow-400':'bg-white'}`}>{isEditing?"✔ Done":"✏️ Edit"}</button><button onClick={handleDownloadPDF} disabled={!exam} className="bg-[#0d3d4f] text-white text-sm px-4 py-1.5 rounded-lg">⬇ Download PDF</button></div></div>
+          <div className="flex justify-between items-center p-4 border-b"><h2 className="font-bold">Preview (Old Design)</h2><div className="flex gap-2"><button onClick={()=>setIsEditing(!isEditing)} className={`border text-sm px-3 py-1.5 rounded-lg ${isEditing?'bg-yellow-400':'bg-white'}`}>{isEditing?"✔ Done":"✏️ Edit"}</button><button onClick={handleDownloadPDF} disabled={!exam} className="bg-[#0d3d4f] text-white text-sm px-4 py-1.5 rounded-lg">⬇ Download PDF</button></div></div>
           <div className="p-4 bg-[#f5f7fb] min-h-[800px]">
             <div className="bg-white rounded-xl shadow-lg border overflow-hidden">
               <div ref={printRef}>
                 <div className="cover-page p-8 text-center relative" style={{minHeight:'100vh', display:'flex', flexDirection:'column', justifyContent:'space-between', pageBreakAfter:'always'}}>
                   <div className="watermark">{firstName}</div>
                   <div className="relative z-10 flex flex-col items-center">
-                    {schoolLogo? <img src={schoolLogo} alt="Badge" className="school-badge" style={{width:'65px', height:'65px', objectFit:'contain', marginTop:'12px'}}/> : <div className="school-badge flex items-center justify-center bg-gray-100 border rounded-full text-xl" style={{width:'65px', height:'65px'}}>🏫</div>}
-                    <h1 className="text-[18px] font-bold uppercase mt-3">{schoolName}</h1>
-                    <div className="w-16 h-0.5 bg-black mx-auto my-3"></div>
+                    {schoolLogo? <img src={schoolLogo} alt="Badge" className="school-badge" style={{width:'65px', height:'65px', objectFit:'contain'}}/> : <div style={{width:'65px', height:'65px'}} className="flex items-center justify-center bg-gray-100 border rounded-full text-xl">🏫</div>}
+                    <h1 className="text-[18px] font-bold uppercase mt-3">{schoolName}</h1><div className="w-16 h-0.5 bg-black mx-auto my-3"></div>
                   </div>
                   <div className="relative z-10"><h2 className="text-[14px] font-bold uppercase">{subject} - {grade.toUpperCase()} - {examType.toUpperCase()}</h2><p className="text-[11px] mt-1 font-mono">{paperCode}</p></div>
-                  <div className="relative z-10 space-y-1 text-[12px]"><p><strong>TIME:</strong> {durationText}</p><p><strong>QUESTIONS:</strong> {numQ} {includeSpaces? "| WITH ANSWER SPACES" : ""}</p></div>
+                  <div className="relative z-10 space-y-1 text-[12px]"><p><strong>TIME:</strong> {examType==="End term"?"40 MINUTES":"1 HOUR"}</p><p><strong>DATE:</strong> {dateText}</p><p><strong>QUESTIONS:</strong> {numQ} {includeSpaces?"WITH SPACES":""}</p></div>
                   <div className="relative z-10 border-2 border-black p-3 text-left text-[11px] max-w-[90%] mx-auto bg-white/80"><strong>INSTRUCTIONS:</strong><br/>Answer ALL questions in the spaces provided after each question.</div>
-                  <div className="relative z-10 mb-4"><p className="text-[10px] text-gray-600">Watermark: {firstName}</p></div>
+                  <div className="relative z-10 mb-4"><p className="text-[10px] text-gray-600">This paper consists of {numQ} printed questions | Watermark: {firstName}</p></div>
                 </div>
                 <div className="questions-page">
                   <div className="watermark" style={{fontSize:'70px'}}>{firstName}</div>
                   <div className="relative z-10">
                     <div className="text-center font-bold text-[10px] mb-3 border-b pb-2 flex justify-between"><span>{schoolName} | {subject}</span><span>{paperCode}</span></div>
-                    {!exam && <p className="text-gray-400 text-center mt-10">Generate IRE exam to see standardized spacing</p>}
+                    {!exam && <p className="text-gray-400 text-center mt-10">Generate exam to see standardized spaces</p>}
                     {exam && <div className={`text-[13px] leading-6 ${isEditing?'border-2 border-dashed border-yellow-400 p-2':''}`} contentEditable={isEditing} suppressContentEditableWarning>{renderExamWithSpaces(exam)}</div>}
                   </div>
                 </div>
