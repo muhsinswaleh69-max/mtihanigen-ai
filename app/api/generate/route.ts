@@ -17,7 +17,7 @@ Number of Questions: ${numQ}
 
 Requirements:
 1. Official Kenyan exam format: Header, Instructions, Time, Marks
-2. Kenyan names: Otieno, Wafula, Akinyi, Njeri
+2. Kenyan names: Otieno, Wafula, Akinyi, Njeri, places like Mumias
 3. CBC Competency Based: Critical Thinking, Creativity
 4. Marks per question
 5. At the end, provide marking scheme
@@ -31,7 +31,7 @@ Requirements:
         "Authorization": `Bearer ${process.env.GROQ_API_KEY}`
       },
       body: JSON.stringify({
-        model: "llama-3.3-70b-versatile",
+        model: "llama-3.1-8b-instant",
         messages: [
           { role: "system", content: "You are a Kenyan CBC KICD exam setter. Create high quality exams." },
           { role: "user", content: prompt }
