@@ -5,92 +5,72 @@ export async function POST(req: Request) {
     const { subject, grade, topic, numQ, examType, difficulty, structure, schoolName } = await req.json();
 
     if (!process.env.GROQ_API_KEY) {
-      return NextResponse.json({ exam: "ERROR: GROQ_API_KEY is missing in Vercel > Settings > Environment Variables. Add it and Redeploy." });
+      return NextResponse.json({ exam: "ERROR: GROQ_API_KEY missing in Vercel > Settings > Environment Variables" });
     }
 
     const isKiswahili = subject.toLowerCase().includes("kiswahili");
-    const isDiagramSubject = ["science", "math", "bio", "chem", "phys", "agri", "geography", "pre-technical", "home science"].some(s => subject.toLowerCase().includes(s));
+    const isDiagramSubject = ["science", "math", "bio", "chem", "phys", "agri", "geography"].some(s => subject.toLowerCase().includes(s));
     const diagramCount = Math.ceil(Number(numQ) / 5);
 
-    const diagramInstruction = isDiagramSubject ? `
-DIAGRAM RULE: You MUST include ${diagramCount} diagrams. Format each on its own line EXACTLY as:
-[DIAGRAM: clear black and white line drawing of pendulum with pivot A, string B, bob C labelled]
-` : `If helpful include 1 diagram as [DIAGRAM: description]`;
+    const diagramInstruction = isDiagramSubject? `
+DIAGRAM RULE: Include ${diagramCount} diagrams as: [DIAGRAM: clear black and white drawing of X labelled A,B,C]
+` : ``;
 
-    const prompt = isKiswahili ? `
-Wewe ni mwalimu wa KICD CBC Kenya wa ${schoolName || 'shule'}.
-Tunga mtihani wa ${grade} somo ${subject}.
-Mada za kufundishia (usizichapishe): ${topic}
-Idadi ya maswali: ${numQ}
-Aina ya maswali: ${structure} - Multiple Choice ni A,B,C,D. Structured ni maswali mafupi. Mixed ni mchanganyiko.
-Ugumu: ${difficulty} (usiandike ugumu kwenye karatasi)
+    const prompt = isKiswahili? `
+Wewe ni mwalimu wa KICD CBC Kenya wa ${schoolName}.
+Tunga mtihani wa ${grade} ${subject}.
+Mada za ndani (usizichapishe): ${topic}
+Maswali: ${numQ}, Aina: ${structure}, Ugumu: ${difficulty} (usichapishe ugumu)
 ${diagramInstruction}
-
-MUHIMU:
-- Andika kwa Kiswahili sanifu PEKEE
-- Usianndike Topic au Difficulty kwenye karatasi
-- Format:
-SEHEMU A: MASWALI YA KUCHAGUA
-1. ...
-A. B. C. D.
-
-[DIAGRAM: kama inahitajika]
-
-SEHEMU B: MASWALI MAFUPI
+Andika Kiswahili sanifu tu. Usianndike Topic au Difficulty.
+Format: SEHEMU A: MASWALI YA KUCHAGUA, kisha SEHEMU B
 ` : `
-You are a Kenyan KICD CBC exam setter for ${schoolName || 'school'}.
-Grade: ${grade}, Subject: ${subject}
-Internal Topics (DO NOT PRINT TOPICS OR DIFFICULTY ON PAPER): ${topic}
-Number of questions: ${numQ}
-Question structure: ${structure} - Multiple Choice = A,B,C,D options. Structured = short answer. Mixed = both.
-Difficulty: ${difficulty} (DO NOT PRINT difficulty level on exam paper)
+You are KICD CBC exam setter for ${schoolName}.
+Grade: ${grade}, Subject: ${subject}, Internal Topics (DO NOT PRINT): ${topic}
+Questions: ${numQ}, Structure: ${structure}, Difficulty: ${difficulty} (DO NOT PRINT DIFFICULTY)
 ${diagramInstruction}
-
-REQUIREMENTS:
-- Follow KICD CBC syllabus
-- Kenyan context: use names like Otieno, Njeri
-- DO NOT write Topic or Difficulty on the paper itself
-- Format:
-SECTION A: MULTIPLE CHOICE QUESTIONS
-1. ...
-A. B. C. D.
-
-[DIAGRAM: if needed]
-
-SECTION B: SHORT ANSWER QUESTIONS
-- Plain text only, no * # symbols
+Kenyan context. Plain text only. Do not print Topic or Difficulty.
+Format: SECTION A: MULTIPLE CHOICE, SECTION B: SHORT ANSWER
 `;
 
-    const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${process.env.GROQ_API_KEY}`
-      },
-      body: JSON.stringify({
-        model: "llama-3.1-8b-instant", // FIXED - working Groq model
-        messages: [{ role: "user", content: prompt }],
-        temperature: 0.7,
-        max_tokens: 4000
-      }),
-    });
+    // Groq models - tries in order until one works
+    const MODELS = [
+      "llama-3.3-70b-versatile",
+      "llama3-70b-8192",
+      "llama3-8b-8192",
+      "mixtral-8x7b-32768",
+      "gemma2-9b-it"
+    ];
 
-    const data = await res.json();
-    
-    if (!res.ok) {
-      console.error("GROQ ERROR:", data);
-      return NextResponse.json({ exam: `GROQ ERROR: ${data.error?.message || JSON.stringify(data)}` });
+    let lastError = "";
+    for (const model of MODELS) {
+      try {
+        const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "Authorization": `Bearer ${process.env.GROQ_API_KEY}` },
+          body: JSON.stringify({
+            model,
+            messages: [{ role: "user", content: prompt }],
+            temperature: 0.7,
+            max_tokens: 4000
+          }),
+        });
+        const data = await res.json();
+        if (!res.ok) {
+          lastError = `${model}: ${data.error?.message || JSON.stringify(data)}`;
+          continue; // try next model
+        }
+        const text = data.choices?.[0]?.message?.content;
+        if (text) return NextResponse.json({ exam: text });
+      } catch (e: any) {
+        lastError = e.message;
+        continue;
+      }
     }
 
-    const examText = data.choices?.[0]?.message?.content;
-    if (!examText) {
-      return NextResponse.json({ exam: "Failed: Empty response from AI. Try again with fewer questions (e.g. 20)." });
-    }
-
-    return NextResponse.json({ exam: examText });
+    return NextResponse.json({ exam: `GROQ ERROR: All models failed. Last error: ${lastError}. Go to console.groq.com > API Keys > Check your key is valid and has credits.` });
 
   } catch (err: any) {
-    console.error("SERVER ERROR:", err);
     return NextResponse.json({ exam: `SERVER ERROR: ${err.message}` }, { status: 500 });
   }
 }
