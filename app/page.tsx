@@ -2,9 +2,9 @@
 import { useState } from "react";
 
 export default function Home() {
-  const [subject, setSubject] = useState("Mathematics");
+  const [subject, setSubject] = useState("Kiswahili");
   const [grade, setGrade] = useState("Grade 7");
-  const [topic, setTopic] = useState("Fractions");
+  const [topic, setTopic] = useState("all topics");
   const [numQ, setNumQ] = useState("10");
   const [exam, setExam] = useState("");
   const [loading, setLoading] = useState(false);
@@ -47,22 +47,33 @@ export default function Home() {
 
             <label className="block text-sm font-medium mb-1">Subject</label>
             <select value={subject} onChange={(e)=>setSubject(e.target.value)} className="w-full border p-2 rounded mb-3">
-              <option>Mathematics</option><option>English</option><option>Kiswahili</option><option>Science</option><option>Social Studies</option><option>CRE</option><option>Agriculture</option>
+              <option>Mathematics</option><option>English</option><option>Kiswahili</option><option>Science</option><option>Social Studies</option><option>CRE</option><option>Agriculture</option><option>Business Studies</option>
             </select>
 
             <label className="block text-sm font-medium mb-1">Class</label>
             <select value={grade} onChange={(e)=>setGrade(e.target.value)} className="w-full border p-2 rounded mb-3">
-              <option>Grade 4</option><option>Grade 5</option><option>Grade 6</option><option>Grade 7</option><option>Grade 8</option><option>Grade 9</option><option>Form 1</option><option>Form 2</option><option>Form 3</option><option>Form 4</option>
+              <option>Grade 1</option>
+              <option>Grade 2</option>
+              <option>Grade 3</option>
+              <option>Grade 4</option>
+              <option>Grade 5</option>
+              <option>Grade 6</option>
+              <option>Grade 7</option>
+              <option>Grade 8</option>
+              <option>Grade 9</option>
+              <option>Grade 10</option>
+              <option>Grade 11</option>
+              <option>Grade 12</option>
             </select>
 
             <label className="block text-sm font-medium mb-1">Topic</label>
-            <input value={topic} onChange={(e)=>setTopic(e.target.value)} className="w-full border p-2 rounded mb-3" placeholder="e.g. Fractions" />
+            <input value={topic} onChange={(e)=>setTopic(e.target.value)} className="w-full border p-2 rounded mb-3" placeholder="e.g. all topics" />
 
             <label className="block text-sm font-medium mb-1">No. of Questions</label>
             <input value={numQ} onChange={(e)=>setNumQ(e.target.value)} className="w-full border p-2 rounded mb-4" type="number" />
 
             <button onClick={generateExam} disabled={loading} className="w-full bg-blue-900 text-white py-3 rounded-lg font-bold hover:bg-blue-800 disabled:bg-gray-400">
-              {loading? "Generating... Please wait 10s" : "✨ Generate Real Exam with AI"}
+              {loading? "Generating... Please wait" : "✨ Generate Real Exam with AI"}
             </button>
           </div>
 
@@ -72,7 +83,7 @@ export default function Home() {
             {!exam && <p className="text-gray-400 text-sm">Preview will appear here after generation</p>}
             {exam && (
               <>
-                <div className="border p-4 rounded bg-white text-sm leading-6 text-gray-800 max-h-[600px] overflow-y-auto"
+                <div className="border p-4 rounded bg-white text-sm leading-6 text-gray-800 max-h-[650px] overflow-y-auto"
                      dangerouslySetInnerHTML={{ __html: formatExam(exam) }}
                 />
                 <button className="w-full mt-4 bg-green-600 text-white py-3 rounded-lg font-bold">
