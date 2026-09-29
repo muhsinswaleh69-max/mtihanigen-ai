@@ -27,35 +27,37 @@ function RealDiagram({ desc, figNum }: { desc: string, figNum: number }) {
     svg = (<svg viewBox="0 0 300 120" className="w-full h-[120px]"><rect x="10" y="10" width="280" height="100" fill="none" stroke="black" strokeWidth="2" rx="6"/><text x="20" y="50" fontSize="11" fontWeight="bold">{desc.slice(0,60)}</text></svg>);
   }
   return (
-    <div className="my-4 border-[3px] border-black bg-white rounded-lg overflow-hidden print:border-black">
-      <div className="bg-black text-white text-[10px] font-bold px-3 py-1 flex justify-between"><span>DIAGRAM {figNum}</span><span>KICD • BLACK & WHITE</span></div>
-      <div className="p-1 bg-white">{svg}</div>
-      <div className="px-3 py-1.5 text-[11px] text-black bg-gray-50 border-t text-center">{desc}</div>
+    <div className="my-4 border-[2.5px] border-black bg-white rounded">
+      <div className="bg-black text-white text-[10px] font-bold px-3 py-1 flex justify-between"><span>DIAGRAM {figNum}</span><span>KICD</span></div>
+      <div className="p-1">{svg}</div>
+      <div className="px-3 py-1 text-[11px] text-center border-t">{desc}</div>
     </div>
   );
 }
 
 export default function Home() {
-  const [schoolName, setSchoolName] = useState("MUMIAS PRIMARY SCHOOL");
-  const [schoolLevel, setSchoolLevel] = useState("Primary + JSS"); // extent
-  const [grade, setGrade] = useState("Grade 7");
-  const [subject, setSubject] = useState("Integrated Science");
-  const [topics, setTopics] = useState(["Energy", "Forces", "Environment"]);
+  const [schoolName, setSchoolName] = useState("VISA OSHWAL PRIMARY SCHOOL");
+  const [schoolLevel, setSchoolLevel] = useState("Primary + JSS");
+  const [grade, setGrade] = useState("Grade 10");
+  const [subject, setSubject] = useState("Mathematics");
+  const [topics, setTopics] = useState(["Algebra"]);
   const [topicInput, setTopicInput] = useState("");
   const [examType, setExamType] = useState("End term");
-  const [difficulty, setDifficulty] = useState("Medium");
-  const [structure, setStructure] = useState("Mixed");
-  const [numQ, setNumQ] = useState(10);
+  const [difficulty, setDifficulty] = useState("Hard");
+  const [structure, setStructure] = useState("Multiple Choice");
+  const [numQ, setNumQ] = useState(50);
   const [exam, setExam] = useState("");
   const [loading, setLoading] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
+  const [paperCode, setPaperCode] = useState("");
   const printRef = useRef<HTMLDivElement>(null);
 
   const getAllowedGrades = () => {
-    if (schoolLevel === "Primary Only") return Object.keys(subjectsByGrade).filter(g => ["Grade 1","Grade 2","Grade 3","Grade 4","Grade 5","Grade 6"].includes(g));
+    if (schoolLevel === "Primary Only") return ["Grade 1","Grade 2","Grade 3","Grade 4","Grade 5","Grade 6"];
     if (schoolLevel === "JSS Only") return ["Grade 7","Grade 8","Grade 9"];
     if (schoolLevel === "Senior Only") return ["Grade 10","Grade 11","Grade 12"];
-    return Object.keys(subjectsByGrade).slice(0,9); // Primary + JSS
+    if (schoolLevel === "Primary + JSS + Senior") return Object.keys(subjectsByGrade);
+    return ["Grade 1","Grade 2","Grade 3","Grade 4","Grade 5","Grade 6","Grade 7","Grade 8","Grade 9"];
   };
 
   useEffect(() => {
@@ -70,6 +72,8 @@ export default function Home() {
 
   const generateExam = async () => {
     setLoading(true); setExam(""); setIsEditing(false);
+    const code = `MG-${grade.replace("Grade ","G")}-${subject.substring(0,3).toUpperCase()}-${new Date().toISOString().slice(0,10).replace(/-/g,"")}-${Math.floor(Math.random()*900)+100}`;
+    setPaperCode(code);
     try {
       const res = await fetch("/api/generate", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ subject, grade, topic: topics.join(", ") || "all topics", numQ, examType, difficulty, structure, schoolName }) });
       const data = await res.json(); setExam(data.exam);
@@ -80,10 +84,20 @@ export default function Home() {
   const handleDownloadPDF = () => {
     if(!printRef.current) return;
     const content = printRef.current.innerHTML;
-    const win = window.open('', '', 'height=800,width=800');
+    const win = window.open('', '', 'height=900,width=800');
     if(win){
-      win.document.write(`<html><head><title>${schoolName} - ${subject}</title><style>body{font-family:Arial;padding:20px;color:black}.no-print{display:none} svg{max-width:100%}.border-black{border:2px solid black} @media print{body{padding:0}}</style></head><body>${content}</body></html>`);
-      win.document.close(); win.focus(); win.print();
+      win.document.write(`
+        <html><head><title>${schoolName} - ${subject} - ${paperCode}</title>
+        <style>
+          body{font-family: Times New Roman, serif; padding:30px; color:black; line-height:1.6}
+          h1{text-align:center; font-size:18px; text-transform:uppercase; margin:0}
+          h2{text-align:center; font-size:14px; margin:5px 0}
+         .meta{text-align:center; font-size:11px; margin:10px 0}
+         .instructions{border:1px solid black; padding:10px; font-size:12px; margin:15px 0}
+          @media print{body{padding:10px}}
+        </style></head>
+        <body>${content}</body></html>`);
+      win.document.close(); win.focus(); setTimeout(()=>win.print(), 300);
     }
   };
 
@@ -98,108 +112,91 @@ export default function Home() {
   };
 
   const isKiswahili = subject.toLowerCase().includes("kiswahili");
+  const durationText = examType==="End term"? "40 MINUTES" : examType==="Mid-term"? "1 HOUR" : "1 HOUR 30 MINUTES";
+  const dateText = new Date().toLocaleDateString('en-GB', { day:'2-digit', month:'long', year:'numeric' });
 
   return (
     <div className="min-h-screen bg-[#eef2f7]">
-      <div className="bg-[#0d3d4f] text-white p-4 flex justify-between items-center">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center text-xl">🧠</div>
-          <h1 className="text-2xl font-bold">MtihaniGen AI</h1>
-          <span className="bg-[#7de2e6] text-[#0d3d4f] text-[10px] px-3 py-1 rounded-full font-bold ml-2">AI EXAM GENERATOR</span>
-        </div>
-        <div className="text-right leading-tight"><div className="font-bold">{schoolName}</div><div className="text-xs opacity-80">Teacher Jane ▼</div></div>
+      <div className="bg-[#0d3d4f] text-white p-4 flex justify-between items-center no-print">
+        <div className="flex items-center gap-3"><div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">🧠</div><h1 className="text-xl font-bold">MtihaniGen AI</h1></div>
+        <div className="text-right text-sm"><div className="font-bold">{schoolName}</div><div className="text-xs opacity-80">Teacher Jane ▼</div></div>
       </div>
 
       <div className="max-w-7xl mx-auto p-4 grid lg:grid-cols-2 gap-6 mt-4">
-        {/* LEFT - DASHBOARD */}
-        <div className="bg-white rounded-xl p-6 shadow-sm border">
-          <h2 className="text-2xl font-bold text-[#0d3d4f]">Create New Exam</h2>
-          <p className="text-gray-500 text-sm mb-4">Dashboard — School sets its own extent</p>
+        {/* LEFT */}
+        <div className="bg-white rounded-xl p-6 shadow-sm border no-print">
+          <h2 className="text-xl font-bold text-[#0d3d4f]">Create New Exam</h2>
+          <p className="text-xs text-gray-500 mb-4">School dashboard - set your extent</p>
 
-          <div className="bg-yellow-50 border border-yellow-200 p-3 rounded-lg mb-4">
-            <label className="text-xs font-bold text-gray-700">🏫 NAME OF THE SCHOOL (Will appear on exam paper)</label>
-            <input value={schoolName} onChange={e=>setSchoolName(e.target.value.toUpperCase())} placeholder="MUMIAS PRIMARY SCHOOL" className="w-full border p-2.5 rounded-lg mt-1 bg-white font-bold text-[#0d3d4f]" />
-          </div>
+          <label className="text-xs font-bold">🏫 SCHOOL NAME</label>
+          <input value={schoolName} onChange={e=>setSchoolName(e.target.value.toUpperCase())} className="w-full border p-2.5 rounded-lg mt-1 bg-white font-bold mb-3" />
 
-          <div className="mb-4">
-            <label className="text-xs font-bold text-gray-600">📚 SCHOOL EXTENT - To what level can exams be set?</label>
-            <select value={schoolLevel} onChange={e=>setSchoolLevel(e.target.value)} className="w-full border p-2.5 rounded-lg mt-1 bg-gray-50">
-              <option>Primary Only</option>
-              <option>Primary + JSS</option>
-              <option>JSS Only</option>
-              <option>Senior Only</option>
-              <option>Primary + JSS + Senior</option>
-            </select>
-            <p className="text-[10px] text-gray-500 mt-1">If you choose Primary Only, you will only see Grade 1-6. JSS Only = Grade 7-9.</p>
-          </div>
-
-          <label className="text-xs font-bold text-gray-600">CLASS / GRADE</label>
-          <select value={grade} onChange={e=>setGrade(e.target.value)} className="w-full border p-2.5 rounded-lg mt-1 bg-gray-50 mb-4">
-            {getAllowedGrades().map(g => <option key={g}>{g}</option>)}
+          <label className="text-xs font-bold">📚 SCHOOL EXTENT (What level can you set?)</label>
+          <select value={schoolLevel} onChange={e=>setSchoolLevel(e.target.value)} className="w-full border p-2.5 rounded-lg mt-1 bg-gray-50 mb-3">
+            <option>Primary Only</option><option>Primary + JSS</option><option>JSS Only</option><option>Senior Only</option><option>Primary + JSS + Senior</option>
           </select>
 
-          <label className="text-xs font-bold text-gray-600">SUBJECT</label>
-          <select value={subject} onChange={e=>setSubject(e.target.value)} className="w-full border p-2.5 rounded-lg mt-1 bg-gray-50 mb-4">
-            {subjectsByGrade[grade]?.map(s => <option key={s}>{s}</option>)}
-          </select>
+          <label className="text-xs font-bold">CLASS / GRADE</label>
+          <select value={grade} onChange={e=>setGrade(e.target.value)} className="w-full border p-2.5 rounded-lg mt-1 bg-gray-50 mb-3">{getAllowedGrades().map(g=><option key={g}>{g}</option>)}</select>
 
-          <label className="text-xs font-bold text-gray-600">TOPIC / STRAND</label>
+          <label className="text-xs font-bold">SUBJECT</label>
+          <select value={subject} onChange={e=>setSubject(e.target.value)} className="w-full border p-2.5 rounded-lg mt-1 bg-gray-50 mb-3">{subjectsByGrade[grade]?.map(s=><option key={s}>{s}</option>)}</select>
+
+          <label className="text-xs font-bold">TOPIC</label>
           <div className="flex gap-2 mt-1 mb-2"><input value={topicInput} onChange={e=>setTopicInput(e.target.value)} onKeyDown={e=>e.key==='Enter'&&addTopic()} placeholder="Add topic" className="flex-1 border p-2.5 rounded-lg bg-gray-50" /><button onClick={addTopic} className="bg-[#0d3d4f] text-white px-5 rounded-lg">Add</button></div>
-          <div className="flex flex-wrap gap-2 mb-4">{topics.map(t => (<span key={t} className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm">{t} <button onClick={()=>removeTopic(t)}>×</button></span>))}</div>
+          <div className="flex flex-wrap gap-2 mb-3">{topics.map(t=><span key={t} className="bg-blue-100 px-3 py-1 rounded-full text-sm">{t} <button onClick={()=>removeTopic(t)}>×</button></span>)}</div>
 
-          <label className="text-xs font-bold text-gray-600">TYPE OF EXAM</label>
-          <div className="flex gap-2 mb-4 mt-1">{["Opener","Mid-term","End term"].map(type => (<button key={type} onClick={()=>setExamType(type)} className={`flex-1 py-2 rounded-lg border text-sm ${examType===type?'bg-[#0d3d4f] text-white':'bg-gray-100'}`}>{type}</button>))}</div>
+          <label className="text-xs font-bold">TYPE OF EXAM</label>
+          <div className="flex gap-2 mb-3 mt-1">{["Opener","Mid-term","End term"].map(type=><button key={type} onClick={()=>setExamType(type)} className={`flex-1 py-2 rounded-lg border text-sm ${examType===type?'bg-[#0d3d4f] text-white':'bg-gray-100'}`}>{type}</button>)}</div>
 
-          <label className="text-xs font-bold text-gray-600">DIFFICULTY</label>
-          <div className="flex gap-2 mb-4 mt-1">{["Easy","Medium","Hard"].map(d => (<button key={d} onClick={()=>setDifficulty(d)} className={`flex-1 py-2 rounded-lg border text-sm ${difficulty===d?'bg-blue-600 text-white':'bg-gray-100'}`}>{d}</button>))}</div>
+          <label className="text-xs font-bold">DIFFICULTY</label>
+          <div className="flex gap-2 mb-3 mt-1">{["Easy","Medium","Hard"].map(d=><button key={d} onClick={()=>setDifficulty(d)} className={`flex-1 py-2 rounded-lg border text-sm ${difficulty===d?'bg-blue-600 text-white':'bg-gray-100'}`}>{d}</button>)}</div>
 
-          <label className="text-xs font-bold text-gray-600">NUMBER OF QUESTIONS</label>
-          <div className="flex items-center gap-3 mt-1 mb-6"><button onClick={()=>setNumQ(Math.max(5,numQ-1))} className="border w-9 h-9 rounded-lg bg-white">−</button><span className="border px-5 py-2 rounded-lg bg-white font-bold">{numQ}</span><button onClick={()=>setNumQ(Math.min(50,numQ+1))} className="border w-9 h-9 rounded-lg bg-white">+</button></div>
+          {/* YOU ASKED - STRUCTURE VISIBLE AGAIN */}
+          <label className="text-xs font-bold">STRUCTURE OF QUESTIONS</label>
+          <div className="flex gap-2 mb-4 mt-1">{["Multiple Choice","Structured","Mixed"].map(s=><button key={s} onClick={()=>setStructure(s)} className={`flex-1 py-2 rounded-lg border text-sm font-medium ${structure===s?'bg-blue-600 text-white border-blue-600':'bg-gray-100'}`}>{s}</button>)}</div>
+          <p className="text-[10px] text-gray-500 mb-3">Multiple Choice = A,B,C,D | Structured = short answers | Mixed = both</p>
 
-          <button onClick={generateExam} disabled={loading} className="w-full bg-blue-600 text-white py-3.5 rounded-xl font-bold text-lg">{loading? "Generating..." : "✨ Generate Exam with Diagrams"}</button>
+          <label className="text-xs font-bold">NUMBER OF QUESTIONS</label>
+          <div className="flex items-center gap-3 mt-1 mb-6"><button onClick={()=>setNumQ(Math.max(5,numQ-1))} className="border w-9 h-9 rounded-lg bg-white">−</button><span className="border px-5 py-2 rounded-lg bg-white font-bold">{numQ}</span><button onClick={()=>setNumQ(Math.min(100,numQ+1))} className="border w-9 h-9 rounded-lg bg-white">+</button></div>
+
+          <button onClick={generateExam} disabled={loading} className="w-full bg-blue-600 text-white py-3.5 rounded-xl font-bold text-lg">{loading?"Generating...":"✨ Generate Exam with Diagrams"}</button>
         </div>
 
         {/* RIGHT - PREVIEW */}
         <div className="bg-white rounded-xl shadow-sm border overflow-hidden">
-          <div className="flex justify-between items-center p-4 border-b flex-wrap gap-2">
+          <div className="flex justify-between items-center p-4 border-b no-print">
             <h2 className="font-bold">Preview</h2>
             <div className="flex gap-2">
-              <button onClick={()=>setIsEditing(!isEditing)} className={`border text-sm px-3 py-1.5 rounded-lg ${isEditing?'bg-yellow-400 text-black':'bg-white'}`}>{isEditing?"✔ Done Editing":"✏️ Edit"}</button>
-              <button onClick={handleDownloadPDF} disabled={!exam} className="bg-[#0d3d4f] text-white text-sm px-4 py-1.5 rounded-lg disabled:opacity-50">⬇ Download PDF</button>
+              <button onClick={()=>setIsEditing(!isEditing)} className={`border text-sm px-3 py-1.5 rounded-lg ${isEditing?'bg-yellow-400':'bg-white'}`}>{isEditing?"✔ Done":"✏️ Edit"}</button>
+              <button onClick={handleDownloadPDF} disabled={!exam} className="bg-[#0d3d4f] text-white text-sm px-4 py-1.5 rounded-lg">⬇ Download PDF</button>
             </div>
           </div>
 
           <div className="p-4 bg-[#f5f7fb] min-h-[800px]">
-            <div ref={printRef} className="bg-white p-6 rounded-xl shadow-lg border relative overflow-hidden">
-              <div className="absolute top-40 left-10 text-gray-200 text-6xl rotate-[-30deg] opacity-10 font-bold pointer-events-none">DRAFT<br/>MtihaniGen AI</div>
+            {/* Screen preview - with DRAFT watermark */}
+            <div className="bg-white p-6 rounded-xl shadow-lg border relative overflow-hidden">
+              {/* DRAFT watermark - screen only, no-print */}
+              <div className="absolute top-40 left-10 text-gray-200 text-6xl rotate-[-30deg] opacity-10 font-bold pointer-events-none no-print">DRAFT<br/>MtihaniGen AI</div>
+              <div className="absolute top-2 left-3 text-[10px] text-gray-400 no-print">KE {schoolName} • QR CODE</div>
 
-              <div className="flex justify-between items-start mb-4 relative z-10">
-                <div className="font-bold text-[#0d3d4f] text-[13px]">{isKiswahili? "🇰🇪 " + schoolName : "🇰🇪 " + schoolName}</div>
-                <div className="w-14 h-14 bg-white border flex items-center justify-center text-[8px]">QR CODE</div>
-              </div>
-
-              <h3 className="text-center font-bold text-[14px] text-[#0d3d4f] mb-1 relative z-10">
-                {isKiswahili? `${schoolName} - ${subject.toUpperCase()} - ${grade.toUpperCase()}` : `${schoolName} - ${subject.toUpperCase()} - ${grade.toUpperCase()} EXAM PAPER`}
-              </h3>
-              <p className="text-center text-[10px] text-gray-600 mb-3 relative z-10">
-                {isKiswahili? `Mada: ${topics.join(" | ")} | ${difficulty} | Maswali ${numQ} | Muda: ${examType==="End term"?"Dakika 40":"Saa 1 Dakika 30"}` : `Strand: ${topics.join(" | ")} | ${difficulty} | ${numQ} Qs | ${examType==="End term"?"40 Minutes":"1 HR 30 MINS"}`}
-              </p>
-
-              <div className="bg-blue-50 p-2.5 rounded text-[11px] mb-4 relative z-10 border">
-                {isKiswahili? <><strong>MAELEKEZO:</strong> Jibu maswali YOTE. Kila swali lina alama 1. Chagua jibu bora panapohitajika.</> : <><strong>Instructions:</strong> Answer ALL questions. Each question carries 1 mark. Choose the best answer where applicable.</>}
-              </div>
-
-              {!exam && <p className="text-gray-400 text-sm text-center mt-20 relative z-10">{isKiswahili? "Bonyeza kutengeneza mtihani na michoro":"Click Generate Exam to see preview here with CLEAR diagrams"}</p>}
-
-              {exam && (
-                <div className={`text-[13px] leading-6 text-black relative z-10 ${isEditing?'border-2 border-yellow-400 border-dashed p-2 rounded':''}`} contentEditable={isEditing} suppressContentEditableWarning={true}>
-                  {renderExam(exam)}
+              {/* THIS IS WHAT PRINTS - clean */}
+              <div ref={printRef}>
+                <h1 className="text-center font-bold text-[16px] uppercase tracking-wide">{schoolName}</h1>
+                <h2 className="text-center font-bold text-[13px] mt-1 uppercase">{subject} - {grade} {examType.toUpperCase()} EXAM {paperCode && ` - ${paperCode}`}</h2>
+                <div className="text-center text-[11px] mt-2 space-y-0.5">
+                  <div><strong>TIME:</strong> {isKiswahili? (examType==="End term"?"DAKIKA 40":"SAA 1 NA DAKIKA 30") : durationText} | <strong>DATE:</strong> {dateText}</div>
+                  <div>{isKiswahili? `Mada: ${topics.join(", ")}` : `Strand: ${topics.join(", ")}`} | {structure} | {difficulty} | {numQ} Questions</div>
                 </div>
-              )}
+                <div className="border border-black p-2.5 text-[11px] mt-4 mb-4">
+                  {isKiswahili? <><strong>MAELEKEZO:</strong> Jibu maswali YOTE. Kila swali lina alama 1. Muda uliotolewa ni {durationText.toLowerCase()}.</> : <><strong>INSTRUCTIONS:</strong> Answer ALL questions. Each question carries 1 mark. Time allowed is {durationText}. Date: {dateText}</>}
+                </div>
+                {!exam && <p className="text-gray-400 text-sm text-center mt-16">Click Generate to see exam</p>}
+                {exam && <div className={`text-[13px] leading-6 text-black ${isEditing?'border-2 border-dashed border-yellow-400 p-2':''}`} contentEditable={isEditing} suppressContentEditableWarning>{renderExam(exam)}</div>}
+              </div>
 
-              <div className="text-[8px] text-gray-400 mt-8 border-t pt-2 flex justify-between relative z-10">
-                <span>Generated by MtihaniGen AI • {new Date().toLocaleDateString()} • {schoolName}</span>
-                <span>Scan to verify</span>
+              <div className="text-[8px] text-gray-400 mt-8 border-t pt-2 flex justify-between no-print">
+                <span>Generated by MtihaniGen AI • {new Date().toLocaleDateString()} • {paperCode}</span><span>School Copy</span>
               </div>
             </div>
           </div>
