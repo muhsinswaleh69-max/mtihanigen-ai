@@ -2,25 +2,30 @@
 import { useState, useEffect, useRef } from "react";
 
 const subjectsByGrade: Record<string, string[]> = {
-  "Grade 1": ["Literacy Activities", "Kiswahili", "Mathematical Activities", "Environmental", "CRE"],
-  "Grade 2": ["Literacy Activities", "Kiswahili", "Mathematical Activities", "Environmental", "CRE"],
-  "Grade 3": ["Literacy Activities", "Kiswahili", "Mathematical Activities", "Environmental", "CRE"],
-  "Grade 4": ["Mathematics", "English", "Kiswahili", "Science and Technology", "Social Studies", "Agriculture", "CRE"],
-  "Grade 5": ["Mathematics", "English", "Kiswahili", "Science and Technology", "Social Studies", "Agriculture", "CRE"],
-  "Grade 6": ["Mathematics", "English", "Kiswahili", "Science and Technology", "Social Studies", "Agriculture", "CRE"],
-  "Grade 7": ["Mathematics", "English", "Kiswahili", "Integrated Science", "Social Studies", "Agriculture and Nutrition", "Pre-Technical Studies", "CRE", "Computer Studies"],
-  "Grade 8": ["Mathematics", "English", "Kiswahili", "Integrated Science", "Social Studies", "Agriculture and Nutrition", "Pre-Technical Studies", "CRE", "Computer Studies"],
-  "Grade 9": ["Mathematics", "English", "Kiswahili", "Integrated Science", "Social Studies", "Agriculture and Nutrition", "Pre-Technical Studies", "CRE", "Computer Studies"],
-  "Grade 10": ["Mathematics", "English", "Kiswahili", "Biology", "Chemistry", "Physics", "History", "Geography", "CRE", "Business", "Agriculture"],
-  "Grade 11": ["Mathematics", "English", "Kiswahili", "Biology", "Chemistry", "Physics", "History", "Geography", "CRE", "Business", "Agriculture"],
-  "Grade 12": ["Mathematics", "English", "Kiswahili", "Biology", "Chemistry", "Physics", "History", "Geography", "CRE", "Business", "Agriculture"],
+  "Grade 1": ["Literacy Activities", "Kiswahili", "Mathematical Activities", "Environmental", "CRE", "IRE", "HRE"],
+  "Grade 2": ["Literacy Activities", "Kiswahili", "Mathematical Activities", "Environmental", "CRE", "IRE", "HRE"],
+  "Grade 3": ["Literacy Activities", "Kiswahili", "Mathematical Activities", "Environmental", "CRE", "IRE", "HRE"],
+  "Grade 4": ["Mathematics", "English", "Kiswahili", "Science and Technology", "Social Studies", "Agriculture", "CRE", "IRE", "HRE"],
+  "Grade 5": ["Mathematics", "English", "Kiswahili", "Science and Technology", "Social Studies", "Agriculture", "CRE", "IRE", "HRE"],
+  "Grade 6": ["Mathematics", "English", "Kiswahili", "Science and Technology", "Social Studies", "Agriculture", "CRE", "IRE", "HRE"],
+  "Grade 7": ["Mathematics", "English", "Kiswahili", "Integrated Science", "Social Studies", "Agriculture and Nutrition", "Pre-Technical Studies", "CRE", "IRE", "HRE", "Computer Studies"],
+  "Grade 8": ["Mathematics", "English", "Kiswahili", "Integrated Science", "Social Studies", "Agriculture and Nutrition", "Pre-Technical Studies", "CRE", "IRE", "HRE", "Computer Studies"],
+  "Grade 9": ["Mathematics", "English", "Kiswahili", "Integrated Science", "Social Studies", "Agriculture and Nutrition", "Pre-Technical Studies", "CRE", "IRE", "HRE", "Computer Studies"],
+  "Grade 10": ["Mathematics", "English", "Kiswahili", "Biology", "Chemistry", "Physics", "History", "Geography", "CRE", "IRE", "HRE", "Business", "Agriculture", "Computer Studies"],
+  "Grade 11": ["Mathematics", "English", "Kiswahili", "Biology", "Chemistry", "Physics", "History", "Geography", "CRE", "IRE", "HRE", "Business", "Agriculture", "Computer Studies"],
+  "Grade 12": ["Mathematics", "English", "Kiswahili", "Biology", "Chemistry", "Physics", "History", "Geography", "CRE", "IRE", "HRE", "Business", "Agriculture", "Computer Studies"],
 };
 
 const suggestedTopics: Record<string, string[]> = {
   "Kiswahili": ["Sarufi", "Ufahamu", "Insha", "Fasihi"],
   "Mathematics": ["Algebra", "Geometry", "Triangles", "Logarithms", "Quadratic Equations", "Heron's Formula"],
   "English": ["Grammar", "Comprehension", "Composition"],
+  "Science and Technology": ["Living Things", "Energy", "Materials"],
+  "CRE": ["Creation", "Old Testament", "Life of Jesus", "Christian Values", "The Church"],
+  "IRE": ["Quran", "Hadith", "Fiqh", "Tawheed", "Islamic History", "Akhlaq"],
+  "HRE": ["Dharma", "Karma", "Hindu Festivals", "Vedas", "Yoga", "Scriptures"],
   "Integrated Science": ["Energy", "Forces", "Environment"],
+  "Biology": ["Cells", "Nutrition", "Reproduction"],
 };
 
 function RealDiagram({ desc, figNum }: { desc: string, figNum: number }) {
@@ -41,12 +46,12 @@ function RealDiagram({ desc, figNum }: { desc: string, figNum: number }) {
 }
 
 export default function Home() {
-  const [schoolName, setSchoolName] = useState("VISA OSHWAL PRIMARY SCHOOL");
+  const [schoolName, setSchoolName] = useState("IRSHAAD ISLAMIC SCHOOL");
   const [schoolLogo, setSchoolLogo] = useState<string | null>(null);
   const [schoolLevel, setSchoolLevel] = useState("Primary + JSS + Senior");
   const [grade, setGrade] = useState("Grade 4");
   const [subject, setSubject] = useState("Mathematics");
-  const [topics, setTopics] = useState<string[]>(["Triangles", "Quadratic Equations"]);
+  const [topics, setTopics] = useState<string[]>(["Algebra", "Geometry"]);
   const [topicInput, setTopicInput] = useState("");
   const [examType, setExamType] = useState("End term");
   const [difficulty, setDifficulty] = useState("Medium");
@@ -98,13 +103,13 @@ export default function Home() {
     if(win){
       win.document.write(`<html><head><title>${schoolName}</title><style>
         body{font-family: Times New Roman, serif; margin:0; color:black;}
-       .cover-page{min-height:100vh;display:flex;flex-direction:column;justify-content:space-between;align-items:center;text-align:center;padding:30px 25px;box-sizing:border-box;page-break-after:always;position:relative;overflow:hidden}
-       .watermark{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) rotate(-30deg);font-size:80px;font-weight:900;color:rgba(0,0,0,0.06);letter-spacing:4px;pointer-events:none;z-index:0;white-space:nowrap}
-       .school-badge{width:65px!important;height:65px!important;max-width:65px!important;max-height:65px!important;object-fit:contain;display:block;margin:0 auto;}
-       .questions-page{padding:30px; font-size:13px; line-height:1.7; position:relative; overflow:hidden}
+      .cover-page{min-height:100vh;display:flex;flex-direction:column;justify-content:space-between;align-items:center;text-align:center;padding:30px 25px;box-sizing:border-box;page-break-after:always;position:relative;overflow:hidden}
+      .watermark{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) rotate(-30deg);font-size:80px;font-weight:900;color:rgba(0,0,0,0.06);letter-spacing:4px;pointer-events:none;z-index:0;white-space:nowrap}
+      .school-badge{width:65px!important;height:65px!important;max-width:65px!important;max-height:65px!important;object-fit:contain;display:block;margin:0 auto;}
+      .questions-page{padding:30px; font-size:13px; line-height:1.7; position:relative; overflow:hidden}
         @media print{
-         .cover-page{height:100vh;}
-         .school-badge{width:55px!important;height:55px!important;max-width:55px!important;max-height:55px!important;}
+        .cover-page{height:100vh;}
+        .school-badge{width:55px!important;height:55px!important;max-width:55px!important;max-height:55px!important;}
         }
       </style></head><body>${content}</body></html>`);
       win.document.close(); win.focus(); setTimeout(()=>win.print(), 400);
@@ -135,7 +140,7 @@ export default function Home() {
         <div className="bg-white rounded-xl p-6 shadow border">
           <h2 className="text-xl font-bold text-[#0d3d4f]">Create New Exam</h2>
           <label className="text-xs font-bold mt-4 block">🏫 SCHOOL NAME</label><input value={schoolName} onChange={e=>setSchoolName(e.target.value.toUpperCase())} className="w-full border p-2.5 rounded-lg mt-1 font-bold mb-2" />
-          <label className="text-xs font-bold block">🛡️ SCHOOL BADGE / LOGO (small on print)</label>
+          <label className="text-xs font-bold block">🛡️ SCHOOL BADGE (small print)</label>
           <div className="flex items-center gap-3 mt-1 mb-4"><input type="file" accept="image/*" onChange={handleLogoUpload} className="text-sm border p-2 rounded-lg w-full" />{schoolLogo && <img src={schoolLogo} alt="badge" className="school-badge w-12 h-12 rounded border object-contain bg-white"/>}</div>
           <label className="text-xs font-bold">📚 SCHOOL EXTENT</label><select value={schoolLevel} onChange={e=>setSchoolLevel(e.target.value)} className="w-full border p-2.5 rounded-lg mt-1 bg-gray-50 mb-3"><option>Primary Only</option><option>Primary + JSS</option><option>JSS Only</option><option>Senior Only</option><option>Primary + JSS + Senior</option></select>
           <label className="text-xs font-bold">CLASS / GRADE</label><select value={grade} onChange={e=>setGrade(e.target.value)} className="w-full border p-2.5 rounded-lg mt-1 bg-gray-50 mb-3">{getAllowedGrades().map(g=><option key={g}>{g}</option>)}</select>
@@ -161,13 +166,13 @@ export default function Home() {
                     <div className="w-16 h-0.5 bg-black mx-auto my-4"></div>
                   </div>
                   <div className="relative z-10"><h2 className="text-[15px] font-bold uppercase">{subject} - {grade.toUpperCase()} - {examType.toUpperCase()} EXAMINATION</h2><p className="text-[11px] mt-2 font-mono">{paperCode || "MG-G4-MAT-20250929-001"}</p></div>
-                  <div className="relative z-10 space-y-2 text-[13px]"><p><strong>{isKiswahili?"MUDA":"TIME"}:</strong> {durationText}</p><p><strong>{isKiswahili?"TAREHE":"DATE"}:</strong> {dateText}</p><p><strong>{isKiswahili?"MASWALI":"QUESTIONS"}:</strong> {numQ} | <strong>{isKiswahili?"AINA":"TYPE"}:</strong> {structure}</p></div>
-                  <div className="relative z-10 border-2 border-black p-4 text-left text-[12px] max-w-[90%] mx-auto leading-relaxed bg-white/80"><strong>{isKiswahili?"MAELEKEZO:":"INSTRUCTIONS:"}</strong><br/>{isKiswahili? `Jibu maswali YOTE. Kila swali lina alama 1.` : `Answer ALL questions. Each question carries 1 mark.`}</div>
-                  <div className="relative z-10 mb-6"><p className="text-[10px] text-gray-600">This paper consists of {numQ} printed questions</p></div>
+                  <div className="relative z-10 space-y-2 text-[13px]"><p><strong>{isKiswahili?"MUDA":"TIME"}:</strong> {durationText}</p><p><strong>{isKiswahili?"TAREHE":"DATE"}:</strong> {dateText}</p><p><strong>QUESTIONS:</strong> {numQ} | <strong>TYPE:</strong> {structure}</p></div>
+                  <div className="relative z-10 border-2 border-black p-4 text-left text-[12px] max-w-[90%] mx-auto leading-relaxed bg-white/80"><strong>INSTRUCTIONS:</strong><br/>Answer ALL questions. Each question carries 1 mark.</div>
+                  <div className="relative z-10 mb-6"><p className="text-[10px] text-gray-600">This paper consists of {numQ} printed questions | Watermark: {firstName}</p></div>
                 </div>
                 <div className="questions-page p-6 relative">
                   <div className="watermark" style={{fontSize:'70px'}}>{firstName}</div>
-                  <div className="relative z-10"><div className="text-center font-bold text-[11px] mb-4 border-b pb-2 flex justify-between"><span>{schoolName} | {subject}</span><span>{paperCode}</span></div>{!exam && <p className="text-gray-400 text-center mt-10">Generate exam to see questions</p>}{exam && <div className={`text-[13px] leading-7 ${isEditing?'border-2 border-dashed border-yellow-400 p-2':''}`} contentEditable={isEditing} suppressContentEditableWarning>{renderExam(exam)}</div>}</div>
+                  <div className="relative z-10"><div className="text-center font-bold text-[11px] mb-4 border-b pb-2 flex justify-between"><span>{schoolName} | {subject}</span><span>{paperCode}</span></div>{!exam && <p className="text-gray-400 text-center mt-10">Generate exam to see questions - IRE/HRE ready</p>}{exam && <div className={`text-[13px] leading-7 ${isEditing?'border-2 border-dashed border-yellow-400 p-2':''}`} contentEditable={isEditing} suppressContentEditableWarning>{renderExam(exam)}</div>}</div>
                 </div>
               </div>
             </div>
