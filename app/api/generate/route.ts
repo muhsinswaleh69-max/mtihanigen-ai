@@ -4,7 +4,7 @@ export async function POST(req: Request) {
   const { subject, grade, topic, numQ } = await req.json();
 
   if (!process.env.GROQ_API_KEY) {
-    return NextResponse.json({ exam: "ERROR: GROQ_API_KEY is missing in Vercel Settings. Go to Settings > Environment Variables and add it." });
+    return NextResponse.json({ exam: "ERROR: GROQ_API_KEY is missing in Vercel Settings." });
   }
 
   const prompt = `You are a Kenyan CBC KICD exam setter.
@@ -35,7 +35,7 @@ IMPORTANT:
         "Authorization": `Bearer ${process.env.GROQ_API_KEY}`,
       },
       body: JSON.stringify({
-        model: "llama-3.3-70b-versatile",
+        model: "llama-3.1-8b-instant",
         messages: [{ role: "user", content: prompt }],
         temperature: 0.7,
       }),
