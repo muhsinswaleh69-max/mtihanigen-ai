@@ -2,18 +2,18 @@
 import { useState, useEffect } from "react";
 
 const subjectsByGrade: Record<string, string[]> = {
-  "Grade 1": ["Literacy Activities", "Kiswahili Language Activities", "Mathematical Activities", "Environmental Activities", "Hygiene and Nutrition Activities", "Religious Activities (CRE)", "Creative Activities", "Indigenous Language"],
-  "Grade 2": ["Literacy Activities", "Kiswahili Language Activities", "Mathematical Activities", "Environmental Activities", "Hygiene and Nutrition Activities", "Religious Activities (CRE)", "Creative Activities", "Indigenous Language"],
-  "Grade 3": ["Literacy Activities", "Kiswahili Language Activities", "Mathematical Activities", "Environmental Activities", "Hygiene and Nutrition Activities", "Religious Activities (CRE)", "Creative Activities", "Indigenous Language"],
-  "Grade 4": ["Mathematics", "English", "Kiswahili", "Science and Technology", "Social Studies", "Agriculture", "CRE", "Creative Arts"],
-  "Grade 5": ["Mathematics", "English", "Kiswahili", "Science and Technology", "Social Studies", "Agriculture", "CRE", "Creative Arts"],
-  "Grade 6": ["Mathematics", "English", "Kiswahili", "Science and Technology", "Social Studies", "Agriculture", "CRE", "Creative Arts"],
-  "Grade 7": ["Mathematics", "English", "Kiswahili", "Integrated Science", "Social Studies", "Agriculture and Nutrition", "Pre-Technical Studies", "CRE", "Creative Arts and Sports", "Business Studies", "Computer Studies"],
-  "Grade 8": ["Mathematics", "English", "Kiswahili", "Integrated Science", "Social Studies", "Agriculture and Nutrition", "Pre-Technical Studies", "CRE", "Creative Arts and Sports", "Business Studies", "Computer Studies"],
-  "Grade 9": ["Mathematics", "English", "Kiswahili", "Integrated Science", "Social Studies", "Agriculture and Nutrition", "Pre-Technical Studies", "CRE", "Creative Arts and Sports", "Business Studies", "Computer Studies"],
-  "Grade 10": ["Mathematics", "English", "Kiswahili", "Biology", "Chemistry", "Physics", "History", "Geography", "CRE", "Business Studies", "Agriculture", "Computer Studies", "Home Science"],
-  "Grade 11": ["Mathematics", "English", "Kiswahili", "Biology", "Chemistry", "Physics", "History", "Geography", "CRE", "Business Studies", "Agriculture", "Computer Studies", "Home Science"],
-  "Grade 12": ["Mathematics", "English", "Kiswahili", "Biology", "Chemistry", "Physics", "History", "Geography", "CRE", "Business Studies", "Agriculture", "Computer Studies", "Home Science"],
+  "Grade 1": ["Literacy Activities", "Kiswahili Language Activities", "Mathematical Activities", "Environmental Activities", "Hygiene and Nutrition Activities", "Christian Religious Education (CRE)", "Islamic Religious Education (IRE)", "Hindu Religious Education (HRE)", "Creative Activities", "Indigenous Language"],
+  "Grade 2": ["Literacy Activities", "Kiswahili Language Activities", "Mathematical Activities", "Environmental Activities", "Hygiene and Nutrition Activities", "Christian Religious Education (CRE)", "Islamic Religious Education (IRE)", "Hindu Religious Education (HRE)", "Creative Activities", "Indigenous Language"],
+  "Grade 3": ["Literacy Activities", "Kiswahili Language Activities", "Mathematical Activities", "Environmental Activities", "Hygiene and Nutrition Activities", "Christian Religious Education (CRE)", "Islamic Religious Education (IRE)", "Hindu Religious Education (HRE)", "Creative Activities", "Indigenous Language"],
+  "Grade 4": ["Mathematics", "English", "Kiswahili", "Science and Technology", "Social Studies", "Agriculture", "Christian Religious Education (CRE)", "Islamic Religious Education (IRE)", "Hindu Religious Education (HRE)", "Creative Arts"],
+  "Grade 5": ["Mathematics", "English", "Kiswahili", "Science and Technology", "Social Studies", "Agriculture", "Christian Religious Education (CRE)", "Islamic Religious Education (IRE)", "Hindu Religious Education (HRE)", "Creative Arts"],
+  "Grade 6": ["Mathematics", "English", "Kiswahili", "Science and Technology", "Social Studies", "Agriculture", "Christian Religious Education (CRE)", "Islamic Religious Education (IRE)", "Hindu Religious Education (HRE)", "Creative Arts"],
+  "Grade 7": ["Mathematics", "English", "Kiswahili", "Integrated Science", "Social Studies", "Agriculture and Nutrition", "Pre-Technical Studies", "Christian Religious Education (CRE)", "Islamic Religious Education (IRE)", "Hindu Religious Education (HRE)", "Creative Arts and Sports", "Business Studies", "Computer Studies"],
+  "Grade 8": ["Mathematics", "English", "Kiswahili", "Integrated Science", "Social Studies", "Agriculture and Nutrition", "Pre-Technical Studies", "Christian Religious Education (CRE)", "Islamic Religious Education (IRE)", "Hindu Religious Education (HRE)", "Creative Arts and Sports", "Business Studies", "Computer Studies"],
+  "Grade 9": ["Mathematics", "English", "Kiswahili", "Integrated Science", "Social Studies", "Agriculture and Nutrition", "Pre-Technical Studies", "Christian Religious Education (CRE)", "Islamic Religious Education (IRE)", "Hindu Religious Education (HRE)", "Creative Arts and Sports", "Business Studies", "Computer Studies"],
+  "Grade 10": ["Mathematics", "English", "Kiswahili", "Biology", "Chemistry", "Physics", "History", "Geography", "Christian Religious Education (CRE)", "Islamic Religious Education (IRE)", "Hindu Religious Education (HRE)", "Business Studies", "Agriculture", "Computer Studies", "Home Science"],
+  "Grade 11": ["Mathematics", "English", "Kiswahili", "Biology", "Chemistry", "Physics", "History", "Geography", "Christian Religious Education (CRE)", "Islamic Religious Education (IRE)", "Hindu Religious Education (HRE)", "Business Studies", "Agriculture", "Computer Studies", "Home Science"],
+  "Grade 12": ["Mathematics", "English", "Kiswahili", "Biology", "Chemistry", "Physics", "History", "Geography", "Christian Religious Education (CRE)", "Islamic Religious Education (IRE)", "Hindu Religious Education (HRE)", "Business Studies", "Agriculture", "Computer Studies", "Home Science"],
 };
 
 export default function Home() {
@@ -24,7 +24,6 @@ export default function Home() {
   const [exam, setExam] = useState("");
   const [loading, setLoading] = useState(false);
 
-  // Update subjects when grade changes
   useEffect(() => {
     setSubject(subjectsByGrade[grade][0]);
   }, [grade]);
@@ -48,10 +47,10 @@ export default function Home() {
 
   const formatExam = (text: string) => {
     return text
-    .replace(/\*\*(.*?)\*\*/g, '<strong class="font-bold text-black">$1</strong>')
-    .replace(/###\s*(.*)/g, '<h3 class="font-bold text-lg mt-6 mb-2 text-blue-900">$1</h3>')
-    .replace(/##\s*(.*)/g, '<h2 class="font-bold text-xl mt-6 mb-2">$1</h2>')
-    .replace(/\n/g, '<br/>');
+   .replace(/\*\*(.*?)\*\*/g, '<strong class="font-bold text-black">$1</strong>')
+   .replace(/###\s*(.*)/g, '<h3 class="font-bold text-lg mt-6 mb-2 text-blue-900">$1</h3>')
+   .replace(/##\s*(.*)/g, '<h2 class="font-bold text-xl mt-6 mb-2">$1</h2>')
+   .replace(/\n/g, '<br/>');
   };
 
   return (
