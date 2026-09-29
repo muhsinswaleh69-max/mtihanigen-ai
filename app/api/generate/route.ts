@@ -7,22 +7,55 @@ export async function POST(req: Request) {
     return NextResponse.json({ exam: "ERROR: GROQ_API_KEY missing in Vercel Settings." });
   }
 
-  const prompt = `You are a Kenyan CBC KICD exam setter.
+  const isKiswahili = subject.toLowerCase().includes("kiswahili");
+
+  const prompt = isKiswahili ? `
+Wewe ni mtunzi wa mitihani wa CBC KICD Kenya.
+Tunga mtihani wa ${grade} ${subject}.
+Mada: ${topic}
+Idadi ya maswali: ${numQ}
+
+MASHARTI:
+- Fuata kikamilifu mtaala wa KICD wa ${grade} ${subject}
+- Tumia muktadha wa Kenya: majina kama Njeri, Otieno, Mumias, Kisumu
+- Format lazima iwe hivi:
+
+KISWAHILI - ${grade.toUpperCase().replace("GRADE", "GREDI YA")}
+MUDA: SAA 1 NA DAKIKA 30
+
+SWALI LA 1 (ALAMA 5)
+[Swali]
+
+SWALI LA 2 (ALAMA 6)
+[Swali]
+
+MUHIMU:
+- Andika maelekezo YOTE kwa Kiswahili sanifu
+- USITUMIE * # | - maandishi matupu tu
+- Vichwa kama Uchunguzi Kifani, Insha andika kwa HERUFI KUBWA: UCHUNGUZI KIFANI:
+` : `
+You are a Kenyan CBC KICD exam setter.
 Generate a ${grade} ${subject} exam.
 Topic: ${topic}
 Number of questions: ${numQ}
 
 REQUIREMENTS:
-- Follow Kenya CBC KICD syllabus for ${grade} ${subject}
-- Kenyan context: names like Njeri, Otieno, Mumias
+- Strictly follow KICD syllabus for ${grade} ${subject}
+- Use Kenyan context: names like Njeri, Otieno, Mumias, Kisumu
 - Format:
+
 ${subject.toUpperCase()} - ${grade.toUpperCase()}
 TIME: 1 HR 30 MINS
 
 QUESTION 1 (5 MARKS)
 [Question]
 
-IMPORTANT: No * # | markdown. Plain text only. CAPS for headings like CASE STUDY:
+QUESTION 2 (6 MARKS)
+[Question]
+
+IMPORTANT:
+- All instructions in English
+- Do NOT use * # | - plain text only. CAPS for headings like CASE STUDY:
 `;
 
   try {
