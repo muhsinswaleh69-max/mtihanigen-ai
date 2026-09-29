@@ -5,72 +5,48 @@ export async function POST(req: Request) {
     const { subject, grade, topic, numQ, examType, difficulty, structure, schoolName } = await req.json();
 
     if (!process.env.GROQ_API_KEY) {
-      return NextResponse.json({ exam: "ERROR: GROQ_API_KEY missing in Vercel > Settings > Environment Variables" });
+      return NextResponse.json({ exam: "ERROR: GROQ_API_KEY missing in Vercel" });
     }
 
     const isKiswahili = subject.toLowerCase().includes("kiswahili");
-    const isDiagramSubject = ["science", "math", "bio", "chem", "phys", "agri", "geography"].some(s => subject.toLowerCase().includes(s));
-    const diagramCount = Math.ceil(Number(numQ) / 5);
-
-    const diagramInstruction = isDiagramSubject? `
-DIAGRAM RULE: Include ${diagramCount} diagrams as: [DIAGRAM: clear black and white drawing of X labelled A,B,C]
-` : ``;
+    const isDiagram = ["science","math","bio","chem","phys"].some(s=>subject.toLowerCase().includes(s));
 
     const prompt = isKiswahili? `
-Wewe ni mwalimu wa KICD CBC Kenya wa ${schoolName}.
-Tunga mtihani wa ${grade} ${subject}.
+Wewe ni mwalimu wa KICD ${schoolName}. Tunga mtihani wa ${grade} ${subject}.
 Mada za ndani (usizichapishe): ${topic}
-Maswali: ${numQ}, Aina: ${structure}, Ugumu: ${difficulty} (usichapishe ugumu)
-${diagramInstruction}
-Andika Kiswahili sanifu tu. Usianndike Topic au Difficulty.
-Format: SEHEMU A: MASWALI YA KUCHAGUA, kisha SEHEMU B
+Maswali: ${numQ}, Aina: ${structure}
+${isDiagram?`Include ${Math.ceil(numQ/5)} diagrams as [DIAGRAM: description]`:""}
+Kiswahili sanifu tu. Usichapishe Topic au Difficulty.
 ` : `
-You are KICD CBC exam setter for ${schoolName}.
-Grade: ${grade}, Subject: ${subject}, Internal Topics (DO NOT PRINT): ${topic}
-Questions: ${numQ}, Structure: ${structure}, Difficulty: ${difficulty} (DO NOT PRINT DIFFICULTY)
-${diagramInstruction}
-Kenyan context. Plain text only. Do not print Topic or Difficulty.
-Format: SECTION A: MULTIPLE CHOICE, SECTION B: SHORT ANSWER
+You are KICD teacher for ${schoolName}. Grade ${grade} Subject ${subject}
+Internal topics (DO NOT PRINT): ${topic}
+Questions: ${numQ} Structure: ${structure} Difficulty: ${difficulty} (DO NOT PRINT difficulty)
+${isDiagram?`Include ${Math.ceil(numQ/5)} diagrams as [DIAGRAM: description]`:""}
+Kenyan context. Plain text.
 `;
 
-    // Groq models - tries in order until one works
+    // NEW FREE MODELS as of Sept 2026
     const MODELS = [
-      "llama-3.3-70b-versatile",
-      "llama3-70b-8192",
-      "llama3-8b-8192",
-      "mixtral-8x7b-32768",
-      "gemma2-9b-it"
+      "openai/gpt-oss-20b",
+      "openai/gpt-oss-120b",
+      "meta-llama/llama-4-scout-17b-16e-instruct",
+      "qwen/qwen3-32b",
+      "llama-3.2-90b-vision-preview"
     ];
 
-    let lastError = "";
+    let lastErr = "";
     for (const model of MODELS) {
-      try {
-        const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-          method: "POST",
-          headers: { "Content-Type": "application/json", "Authorization": `Bearer ${process.env.GROQ_API_KEY}` },
-          body: JSON.stringify({
-            model,
-            messages: [{ role: "user", content: prompt }],
-            temperature: 0.7,
-            max_tokens: 4000
-          }),
-        });
-        const data = await res.json();
-        if (!res.ok) {
-          lastError = `${model}: ${data.error?.message || JSON.stringify(data)}`;
-          continue; // try next model
-        }
-        const text = data.choices?.[0]?.message?.content;
-        if (text) return NextResponse.json({ exam: text });
-      } catch (e: any) {
-        lastError = e.message;
-        continue;
-      }
+      const r = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+        method: "POST",
+        headers: { "Content-Type":"application/json", "Authorization": `Bearer ${process.env.GROQ_API_KEY}` },
+        body: JSON.stringify({ model, messages:[{role:"user",content:prompt}], temperature:0.7, max_tokens:4000 })
+      });
+      const d = await r.json();
+      if (!r.ok) { lastErr = `${model}: ${d.error?.message}`; continue; }
+      if (d.choices?.[0]?.message?.content) return NextResponse.json({ exam: d.choices[0].message.content });
     }
-
-    return NextResponse.json({ exam: `GROQ ERROR: All models failed. Last error: ${lastError}. Go to console.groq.com > API Keys > Check your key is valid and has credits.` });
-
-  } catch (err: any) {
-    return NextResponse.json({ exam: `SERVER ERROR: ${err.message}` }, { status: 500 });
+    return NextResponse.json({ exam: `GROQ ERROR: All models failed. Last: ${lastErr}. Check console.groq.com/docs/models for current free models.` });
+  } catch (e:any) {
+    return NextResponse.json({ exam: `SERVER ERROR: ${e.message}` }, {status:500});
   }
 }
