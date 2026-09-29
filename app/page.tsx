@@ -1,57 +1,91 @@
-import { NextResponse } from "next/server";
+"use client";
+import { useState, useEffect } from "react";
 
-export async function POST(req: Request) {
-  const { subject, grade, topic, numQ } = await req.json();
+const subjectsByGrade: Record<string, string[]> = {
+  "Grade 1": ["Literacy Activities", "Kiswahili Language Activities", "Mathematical Activities", "Environmental Activities", "Hygiene and Nutrition Activities", "Christian Religious Education (CRE)", "Islamic Religious Education (IRE)", "Hindu Religious Education (HRE)", "Creative Activities", "Indigenous Language"],
+  "Grade 2": ["Literacy Activities", "Kiswahili Language Activities", "Mathematical Activities", "Environmental Activities", "Hygiene and Nutrition Activities", "Christian Religious Education (CRE)", "Islamic Religious Education (IRE)", "Hindu Religious Education (HRE)", "Creative Activities", "Indigenous Language"],
+  "Grade 3": ["Literacy Activities", "Kiswahili Language Activities", "Mathematical Activities", "Environmental Activities", "Hygiene and Nutrition Activities", "Christian Religious Education (CRE)", "Islamic Religious Education (IRE)", "Hindu Religious Education (HRE)", "Creative Activities", "Indigenous Language"],
+  "Grade 4": ["Mathematics", "English", "Kiswahili", "Science and Technology", "Social Studies", "Agriculture", "Christian Religious Education (CRE)", "Islamic Religious Education (IRE)", "Hindu Religious Education (HRE)", "Creative Arts"],
+  "Grade 5": ["Mathematics", "English", "Kiswahili", "Science and Technology", "Social Studies", "Agriculture", "Christian Religious Education (CRE)", "Islamic Religious Education (IRE)", "Hindu Religious Education (HRE)", "Creative Arts"],
+  "Grade 6": ["Mathematics", "English", "Kiswahili", "Science and Technology", "Social Studies", "Agriculture", "Christian Religious Education (CRE)", "Islamic Religious Education (IRE)", "Hindu Religious Education (HRE)", "Creative Arts"],
+  "Grade 7": ["Mathematics", "English", "Kiswahili", "Integrated Science", "Social Studies", "Agriculture and Nutrition", "Pre-Technical Studies", "Christian Religious Education (CRE)", "Islamic Religious Education (IRE)", "Hindu Religious Education (HRE)", "Creative Arts and Sports", "Business Studies", "Computer Studies"],
+  "Grade 8": ["Mathematics", "English", "Kiswahili", "Integrated Science", "Social Studies", "Agriculture and Nutrition", "Pre-Technical Studies", "Christian Religious Education (CRE)", "Islamic Religious Education (IRE)", "Hindu Religious Education (HRE)", "Creative Arts and Sports", "Business Studies", "Computer Studies"],
+  "Grade 9": ["Mathematics", "English", "Kiswahili", "Integrated Science", "Social Studies", "Agriculture and Nutrition", "Pre-Technical Studies", "Christian Religious Education (CRE)", "Islamic Religious Education (IRE)", "Hindu Religious Education (HRE)", "Creative Arts and Sports", "Business Studies", "Computer Studies"],
+  "Grade 10": ["Mathematics", "English", "Kiswahili", "Biology", "Chemistry", "Physics", "History", "Geography", "Christian Religious Education (CRE)", "Islamic Religious Education (IRE)", "Hindu Religious Education (HRE)", "Business Studies", "Agriculture", "Computer Studies", "Home Science"],
+  "Grade 11": ["Mathematics", "English", "Kiswahili", "Biology", "Chemistry", "Physics", "History", "Geography", "Christian Religious Education (CRE)", "Islamic Religious Education (IRE)", "Hindu Religious Education (HRE)", "Business Studies", "Agriculture", "Computer Studies", "Home Science"],
+  "Grade 12": ["Mathematics", "English", "Kiswahili", "Biology", "Chemistry", "Physics", "History", "Geography", "Christian Religious Education (CRE)", "Islamic Religious Education (IRE)", "Hindu Religious Education (HRE)", "Business Studies", "Agriculture", "Computer Studies", "Home Science"],
+};
 
-  const prompt = `
-You are a Kenyan CBC KICD exam setter.
-Generate a ${grade} ${subject} exam.
-Topic: ${topic}
-Number of questions: ${numQ}
+export default function Home() {
+  const [grade, setGrade] = useState("Grade 9");
+  const [subject, setSubject] = useState(subjectsByGrade["Grade 9"][2]);
+  const [topic, setTopic] = useState("all topics");
+  const [numQ, setNumQ] = useState("20");
+  const [exam, setExam] = useState("");
+  const [loading, setLoading] = useState(false);
 
-REQUIREMENTS:
-- Strictly follow Kenya CBC KICD syllabus for ${grade} ${subject}
-- Use Kenyan context: names like Njeri, Otieno, Mumias, Kisumu
-- Questions must be competency based, not recall only
-- Format like this:
+  useEffect(() => { setSubject(subjectsByGrade[grade][0]); }, [grade]);
 
-${subject.toUpperCase()} - ${grade.toUpperCase()}
-TIME: 1 HR 30 MINS
+  const generateExam = async () => {
+    setLoading(true); setExam("");
+    try {
+      const res = await fetch("/api/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ subject, grade, topic, numQ }),
+      });
+      const data = await res.json();
+      setExam(data.exam);
+    } catch (e) { setExam("Error generating exam."); }
+    setLoading(false);
+  };
 
-QUESTION 1 (5 MARKS)
-[Question text]
+  const formatExam = (text: string) => {
+    if (!text) return "";
+    return text
+    .replace(/\|\s*\d+\s*\|/g, ' ')
+    .replace(/\*\*(.*?)\*\*/g, '<strong class="font-bold">$1</strong>')
+    .replace(/\*(.*?)\*/g, '<strong class="font-bold">$1</strong>')
+    .replace(/###\s*(.*)/g, '<h3 class="font-bold text-lg mt-4">$1</h3>')
+    .replace(/##\s*(.*)/g, '<h2 class="font-bold text-xl mt-4">$1</h2>')
+    .replace(/\*\*/g, '').replace(/\*/g, '').replace(/\|/g, '')
+    .replace(/\n/g, '<br/>');
+  };
 
-QUESTION 2 (6 MARKS)
-[Question text]
-
-IMPORTANT FORMATTING RULES:
-- Do NOT use asterisks * or ** for bold
-- Do NOT use hash # for headings
-- Do NOT use pipe | characters
-- Do NOT use markdown at all
-- Write QUESTION in caps and marks in brackets, plain text only
-- For subheadings like Case Study, Essay, Analysis, just write them in CAPS with colon: CASE STUDY:
-- Keep it clean like a real KICD exam paper
-`;
-
-  try {
-    const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${process.env.GROQ_API_KEY}`,
-      },
-      body: JSON.stringify({
-        model: "llama-3.3-70b-versatile",
-        messages: [{ role: "user", content: prompt }],
-        temperature: 0.7,
-      }),
-    });
-
-    const data = await res.json();
-    const exam = data.choices?.[0]?.message?.content || "Failed to generate exam.";
-    return NextResponse.json({ exam });
-  } catch (err) {
-    return NextResponse.json({ exam: "Error generating exam." }, { status: 500 });
-  }
+  return (
+    <div className="min-h-screen bg-gray-100 p-4">
+      <div className="max-w-6xl mx-auto">
+        <h1 className="text-3xl font-bold text-center mb-2">MtihaniGen AI KE</h1>
+        <p className="text-center text-gray-600 mb-6">Generate CBC KICD Compliant Exams with AI</p>
+        <div className="grid md:grid-cols-2 gap-6">
+          <div className="bg-white p-6 rounded-xl shadow">
+            <h2 className="font-bold text-lg mb-4">✨ Generate Real Exam with AI</h2>
+            <label className="block text-sm font-medium mb-1">Class</label>
+            <select value={grade} onChange={(e)=>setGrade(e.target.value)} className="w-full border p-2 rounded mb-3">
+              {Object.keys(subjectsByGrade).map(g => <option key={g}>{g}</option>)}
+            </select>
+            <label className="block text-sm font-medium mb-1">Learning Area / Subject - for {grade}</label>
+            <select value={subject} onChange={(e)=>setSubject(e.target.value)} className="w-full border p-2 rounded mb-3">
+              {subjectsByGrade[grade].map(s => <option key={s}>{s}</option>)}
+            </select>
+            <label className="block text-sm font-medium mb-1">Topic</label>
+            <input value={topic} onChange={(e)=>setTopic(e.target.value)} className="w-full border p-2 rounded mb-3" placeholder="e.g. all topics" />
+            <label className="block text-sm font-medium mb-1">No. of Questions</label>
+            <input value={numQ} onChange={(e)=>setNumQ(e.target.value)} className="w-full border p-2 rounded mb-4" type="number" />
+            <button onClick={generateExam} disabled={loading} className="w-full bg-blue-900 text-white py-3 rounded-lg font-bold">
+              {loading? "Generating..." : "✨ Generate Real Exam with AI"}
+            </button>
+          </div>
+          <div className="bg-white p-6 rounded-xl shadow">
+            <h2 className="font-bold text-lg mb-4">Preview - {subject} {grade}</h2>
+            {!exam && <p className="text-gray-400 text-sm">Preview will appear here</p>}
+            {exam && (<>
+              <div className="border p-4 rounded text-sm leading-6 max-h-[650px] overflow-y-auto" dangerouslySetInnerHTML={{ __html: formatExam(exam) }} />
+              <button className="w-full mt-4 bg-green-600 text-white py-3 rounded-lg font-bold">Pay 50 KES with M-Pesa to Download PDF</button>
+            </>)}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 }
