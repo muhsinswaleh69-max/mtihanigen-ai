@@ -3,6 +3,10 @@ import { NextResponse } from "next/server";
 export async function POST(req: Request) {
   const { subject, grade, topic, numQ } = await req.json();
 
+  if (!process.env.GROQ_API_KEY) {
+    return NextResponse.json({ exam: "ERROR: GROQ_API_KEY is missing in Vercel Settings. Go to Settings > Environment Variables and add it." });
+  }
+
   const prompt = `You are a Kenyan CBC KICD exam setter.
 Generate a ${grade} ${subject} exam.
 Topic: ${topic}
@@ -16,15 +20,11 @@ ${subject.toUpperCase()} - ${grade.toUpperCase()}
 TIME: 1 HR 30 MINS
 
 QUESTION 1 (5 MARKS)
-[Question]
+[Question text]
 
-IMPORTANT FORMATTING RULES:
-- Do NOT use asterisks * or ** for bold
-- Do NOT use hash #
-- Do NOT use pipe |
-- Do NOT use markdown at all
-- Write QUESTION in caps and marks in brackets, plain text only
-- For subheadings like Case Study, Essay, Analysis, just write them in CAPS with colon: CASE STUDY:
+IMPORTANT:
+- Do NOT use * or ** or # or |
+- No markdown. Plain text only. Use CAPS for headings like CASE STUDY:
 `;
 
   try {
@@ -40,10 +40,17 @@ IMPORTANT FORMATTING RULES:
         temperature: 0.7,
       }),
     });
+
     const data = await res.json();
+
+    if (!res.ok) {
+      return NextResponse.json({ exam: `GROQ API ERROR: ${JSON.stringify(data)}` });
+    }
+
     const exam = data.choices?.[0]?.message?.content || "Failed to generate exam.";
     return NextResponse.json({ exam });
-  } catch (err) {
-    return NextResponse.json({ exam: "Error generating exam." }, { status: 500 });
+
+  } catch (err: any) {
+    return NextResponse.json({ exam: `SERVER ERROR: ${err.message}` }, { status: 500 });
   }
 }
