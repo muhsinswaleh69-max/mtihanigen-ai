@@ -1,87 +1,96 @@
 import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
-  const { subject, grade, topic, numQ, examType, difficulty, structure } = await req.json();
+  try {
+    const { subject, grade, topic, numQ, examType, difficulty, structure, schoolName } = await req.json();
 
-  if (!process.env.GROQ_API_KEY) {
-    return NextResponse.json({ exam: "ERROR: GROQ_API_KEY missing in Vercel Settings." });
-  }
+    if (!process.env.GROQ_API_KEY) {
+      return NextResponse.json({ exam: "ERROR: GROQ_API_KEY is missing in Vercel > Settings > Environment Variables. Add it and Redeploy." });
+    }
 
-  const isKiswahili = subject.toLowerCase().includes("kiswahili");
-  const isDiagramSubject = ["science", "mathematics", "math", "biology", "chemistry", "physics", "agriculture", "geography", "pre-technical", "home science", "creative"].some(s => subject.toLowerCase().includes(s));
+    const isKiswahili = subject.toLowerCase().includes("kiswahili");
+    const isDiagramSubject = ["science", "math", "bio", "chem", "phys", "agri", "geography", "pre-technical", "home science"].some(s => subject.toLowerCase().includes(s));
+    const diagramCount = Math.ceil(Number(numQ) / 5);
 
-  const diagramCount = Math.ceil(Number(numQ) / 4);
-  const diagramInstruction = isDiagramSubject? `
-DIAGRAM RULE (KICD STANDARD - MANDATORY):
-- You MUST include EXACTLY ${diagramCount} to ${diagramCount+1} diagrams.
-- Write each diagram on its own line like: [DIAGRAM: clear black and white line drawing of X, labelled A,B,C, exam friendly, KICD style]
-- Examples:
-[DIAGRAM: Simple electric circuit with battery, bulb and switch, black and white line drawing labelled]
-[DIAGRAM: Bean plant showing root, stem, leaves, labelled for primary school]
-[DIAGRAM: Right angled triangle with base 6cm height 8cm]
-- Diagrams must be simple, black & white, no shading, photocopy friendly.
-- Place diagrams close to relevant questions.
-` : `
-DIAGRAM RULE: If helpful, include 1 simple diagram using format [DIAGRAM: description]
-`;
+    const diagramInstruction = isDiagramSubject ? `
+DIAGRAM RULE: You MUST include ${diagramCount} diagrams. Format each on its own line EXACTLY as:
+[DIAGRAM: clear black and white line drawing of pendulum with pivot A, string B, bob C labelled]
+` : `If helpful include 1 diagram as [DIAGRAM: description]`;
 
-  const prompt = isKiswahili? `
-Wewe ni mtunzi wa mitihani wa KICD CBC Kenya.
-Tunga mtihani wa ${grade} ${subject}.
-Mada: ${topic}
-Aina: ${examType}, Ugumu: ${difficulty}, Muundo: ${structure}
+    const prompt = isKiswahili ? `
+Wewe ni mwalimu wa KICD CBC Kenya wa ${schoolName || 'shule'}.
+Tunga mtihani wa ${grade} somo ${subject}.
+Mada za kufundishia (usizichapishe): ${topic}
 Idadi ya maswali: ${numQ}
+Aina ya maswali: ${structure} - Multiple Choice ni A,B,C,D. Structured ni maswali mafupi. Mixed ni mchanganyiko.
+Ugumu: ${difficulty} (usiandike ugumu kwenye karatasi)
 ${diagramInstruction}
 
-MASHARTI:
-- Fuata mtaala wa KICD
-- Muktadha wa Kenya: Mumias, Kisumu, Njeri, Otieno
+MUHIMU:
+- Andika kwa Kiswahili sanifu PEKEE
+- Usianndike Topic au Difficulty kwenye karatasi
 - Format:
-
-KISWAHILI - GREDI YA ${grade.replace("Grade ","")}
-MUDA: ${examType==="End term"?"DAKIKA 40":"SAA 1 NA DAKIKA 30"}
-MAELEKEZO: Jibu maswali YOTE
-
 SEHEMU A: MASWALI YA KUCHAGUA
-1. [Swali]
+1. ...
+A. B. C. D.
+
 [DIAGRAM: kama inahitajika]
 
-MUHIMU: Kiswahili sanifu tu, maandishi matupu, USITUMIE * # |
+SEHEMU B: MASWALI MAFUPI
 ` : `
-You are a Kenyan KICD CBC exam setter.
-Grade: ${grade}, Subject: ${subject}, Topics: ${topic}
-Exam Type: ${examType}, Difficulty: ${difficulty}, Structure: ${structure}, Questions: ${numQ}
+You are a Kenyan KICD CBC exam setter for ${schoolName || 'school'}.
+Grade: ${grade}, Subject: ${subject}
+Internal Topics (DO NOT PRINT TOPICS OR DIFFICULTY ON PAPER): ${topic}
+Number of questions: ${numQ}
+Question structure: ${structure} - Multiple Choice = A,B,C,D options. Structured = short answer. Mixed = both.
+Difficulty: ${difficulty} (DO NOT PRINT difficulty level on exam paper)
 ${diagramInstruction}
 
 REQUIREMENTS:
-- Follow KICD CBC syllabus strictly
-- Kenyan context: Mumias Primary, Njeri, Otieno
+- Follow KICD CBC syllabus
+- Kenyan context: use names like Otieno, Njeri
+- DO NOT write Topic or Difficulty on the paper itself
 - Format:
-
-${subject.toUpperCase()} - ${grade.toUpperCase()}
-TIME: ${examType==="End term"?"40 MINUTES":"1 HR 30 MINS"}
-INSTRUCTIONS: Answer ALL questions.
-
-SECTION A: MULTIPLE CHOICE QUESTIONS (${Math.ceil(Number(numQ)*0.6)} MARKS)
-1. Which of the following...
-[DIAGRAM: description]
+SECTION A: MULTIPLE CHOICE QUESTIONS
+1. ...
 A. B. C. D.
 
-SECTION B: SHORT ANSWER QUESTIONS
+[DIAGRAM: if needed]
 
-IMPORTANT: Plain text only, NO markdown * # |, use CAPS for headings.
+SECTION B: SHORT ANSWER QUESTIONS
+- Plain text only, no * # symbols
 `;
 
-  try {
     const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
       method: "POST",
-      headers: { "Content-Type": "application/json", "Authorization": `Bearer ${process.env.GROQ_API_KEY}` },
-      body: JSON.stringify({ model: "openai/gpt-oss-20b", messages: [{ role: "user", content: prompt }], temperature: 0.7 }),
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${process.env.GROQ_API_KEY}`
+      },
+      body: JSON.stringify({
+        model: "llama-3.1-8b-instant", // FIXED - working Groq model
+        messages: [{ role: "user", content: prompt }],
+        temperature: 0.7,
+        max_tokens: 4000
+      }),
     });
+
     const data = await res.json();
-    if (!res.ok) return NextResponse.json({ exam: `GROQ ERROR: ${JSON.stringify(data)}` });
-    return NextResponse.json({ exam: data.choices?.[0]?.message?.content || "Failed" });
+    
+    if (!res.ok) {
+      console.error("GROQ ERROR:", data);
+      return NextResponse.json({ exam: `GROQ ERROR: ${data.error?.message || JSON.stringify(data)}` });
+    }
+
+    const examText = data.choices?.[0]?.message?.content;
+    if (!examText) {
+      return NextResponse.json({ exam: "Failed: Empty response from AI. Try again with fewer questions (e.g. 20)." });
+    }
+
+    return NextResponse.json({ exam: examText });
+
   } catch (err: any) {
+    console.error("SERVER ERROR:", err);
     return NextResponse.json({ exam: `SERVER ERROR: ${err.message}` }, { status: 500 });
   }
 }
