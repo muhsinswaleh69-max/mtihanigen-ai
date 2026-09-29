@@ -8,7 +8,10 @@ const TOPICS: any = {
   "English": ["Grammar", "Comprehension", "Composition", "Vocabulary", "Functional Writing"],
   "Science & Technology": ["Living Things", "Matter", "Energy", "Human Body", "Environment"],
   "Social Studies": ["People and Population", "Culture", "Resources", "Governance"],
-  "Kiswahili": ["Sarufi", "Ufahamu", "Insha", "Msamiati"]
+  "Kiswahili": ["Sarufi", "Ufahamu", "Insha", "Msamiati"],
+  "CRE": ["Creation", "Bible", "Christian Values"],
+  "Agriculture": ["Crops", "Livestock", "Soil", "Conservation"],
+  "Creative Arts": ["Music", "Art", "Drama"]
 };
 
 export default function CreateExamForm() {
@@ -19,41 +22,30 @@ export default function CreateExamForm() {
   const [generating, setGenerating] = useState(false);
   const [exam, setExam] = useState("");
 
-  const generate = () => {
+  const generate = async () => {
     setGenerating(true);
-    setTimeout(() => {
-      setExam(`MITIHANIGEN AI - OFFICIAL EXAM
-Subject: ${subject} | Class: ${grade} | Topic: ${topic} | Questions: ${numQ}
-CBC / KICD Compliant - Competency Based
-
-INSTRUCTIONS: Answer all questions.
-
-1. Define ${topic} and give two real-life examples from Kenya. (4 marks)
-
-2. A Grade 7 learner in Mumias has... (Application question about ${topic}) Explain your answer. (6 marks)
-
-3. Differentiate between... related to ${topic}. (5 marks)
-
-4. Solve: [AI Generated ${subject} problem for ${grade} level - ${topic}]
-
-5. Critical Thinking: How does ${topic} help in your community? Give 3 points. (6 marks)
-
-... and ${numQ - 5} more questions...
-
----
-[DEMO MODE] To make it real AI: Connect OpenAI API key in next step. M-Pesa payment unlocks PDF download.
-`);
-      setGenerating(false);
-    }, 1500);
+    setExam("");
+    try {
+      const res = await fetch("/api/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ subject, grade, topic, numQ })
+      });
+      const data = await res.json();
+      setExam(data.exam || "Failed to generate. Check API key in Vercel.");
+    } catch (error) {
+      setExam("Error: Could not connect to AI. Make sure OPENAI_API_KEY is set in Vercel Environment Variables and you redeployed.");
+    }
+    setGenerating(false);
   };
 
   return (
     <div className="bg-white rounded-2xl p-6 shadow-sm border space-y-5">
-      <h2 className="font-bold text-lg text-[#1e3a5f]">Create Exam</h2>
+      <h2 className="font-bold text-lg text-[#1e3a5f]">Create Exam (Real AI)</h2>
 
       <div>
         <label className="text-sm font-medium">Subject</label>
-        <select value={subject} onChange={e=>{setSubject(e.target.value); setTopic((TOPICS[e.target.value]||["General"])[0])}} className="w-full mt-1 border rounded-xl p-3 bg-white">
+        <select value={subject} onChange={e=>{setSubject(e.target.value); const newTopics = TOPICS[e.target.value] || ["General"]; setTopic(newTopics[0]);}} className="w-full mt-1 border rounded-xl p-3 bg-white">
           {SUBJECTS.map(s=> <option key={s}>{s}</option>)}
         </select>
       </div>
@@ -79,16 +71,16 @@ INSTRUCTIONS: Answer all questions.
       </div>
 
       <button onClick={generate} disabled={generating} className="w-full bg-[#1e3a5f] text-white rounded-xl p-3 font-semibold hover:bg-[#17314f] disabled:opacity-50">
-        {generating? "Generating with AI..." : "✨ Generate Exam with AI"}
+        {generating? "🤖 AI is generating CBC exam..." : "✨ Generate Real Exam with AI"}
       </button>
 
       {exam && (
         <div className="mt-2 space-y-3">
-          <div className="bg-[#f3f6fa] rounded-xl p-4 whitespace-pre-wrap text-sm font-mono border max-h-[400px] overflow-auto">{exam}</div>
+          <div className="bg-[#f3f6fa] rounded-xl p-4 whitespace-pre-wrap text-sm font-mono border max-h-[500px] overflow-auto">{exam}</div>
           <button className="w-full bg-green-600 text-white rounded-xl p-3 font-semibold hover:bg-green-700">
             Pay 50 KES with M-Pesa to Download PDF
           </button>
-          <p className="text-[11px] text-gray-500 text-center">M-Pesa Daraja API will be connected next</p>
+          <p className="text-[11px] text-gray-500 text-center">Real AI connected via /api/generate</p>
         </div>
       )}
     </div>
