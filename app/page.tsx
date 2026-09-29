@@ -1,13 +1,33 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+
+const subjectsByGrade: Record<string, string[]> = {
+  "Grade 1": ["Literacy Activities", "Kiswahili Language Activities", "Mathematical Activities", "Environmental Activities", "Hygiene and Nutrition Activities", "Religious Activities (CRE)", "Creative Activities", "Indigenous Language"],
+  "Grade 2": ["Literacy Activities", "Kiswahili Language Activities", "Mathematical Activities", "Environmental Activities", "Hygiene and Nutrition Activities", "Religious Activities (CRE)", "Creative Activities", "Indigenous Language"],
+  "Grade 3": ["Literacy Activities", "Kiswahili Language Activities", "Mathematical Activities", "Environmental Activities", "Hygiene and Nutrition Activities", "Religious Activities (CRE)", "Creative Activities", "Indigenous Language"],
+  "Grade 4": ["Mathematics", "English", "Kiswahili", "Science and Technology", "Social Studies", "Agriculture", "CRE", "Creative Arts"],
+  "Grade 5": ["Mathematics", "English", "Kiswahili", "Science and Technology", "Social Studies", "Agriculture", "CRE", "Creative Arts"],
+  "Grade 6": ["Mathematics", "English", "Kiswahili", "Science and Technology", "Social Studies", "Agriculture", "CRE", "Creative Arts"],
+  "Grade 7": ["Mathematics", "English", "Kiswahili", "Integrated Science", "Social Studies", "Agriculture and Nutrition", "Pre-Technical Studies", "CRE", "Creative Arts and Sports", "Business Studies", "Computer Studies"],
+  "Grade 8": ["Mathematics", "English", "Kiswahili", "Integrated Science", "Social Studies", "Agriculture and Nutrition", "Pre-Technical Studies", "CRE", "Creative Arts and Sports", "Business Studies", "Computer Studies"],
+  "Grade 9": ["Mathematics", "English", "Kiswahili", "Integrated Science", "Social Studies", "Agriculture and Nutrition", "Pre-Technical Studies", "CRE", "Creative Arts and Sports", "Business Studies", "Computer Studies"],
+  "Grade 10": ["Mathematics", "English", "Kiswahili", "Biology", "Chemistry", "Physics", "History", "Geography", "CRE", "Business Studies", "Agriculture", "Computer Studies", "Home Science"],
+  "Grade 11": ["Mathematics", "English", "Kiswahili", "Biology", "Chemistry", "Physics", "History", "Geography", "CRE", "Business Studies", "Agriculture", "Computer Studies", "Home Science"],
+  "Grade 12": ["Mathematics", "English", "Kiswahili", "Biology", "Chemistry", "Physics", "History", "Geography", "CRE", "Business Studies", "Agriculture", "Computer Studies", "Home Science"],
+};
 
 export default function Home() {
-  const [subject, setSubject] = useState("Kiswahili");
   const [grade, setGrade] = useState("Grade 7");
+  const [subject, setSubject] = useState(subjectsByGrade["Grade 7"][0]);
   const [topic, setTopic] = useState("all topics");
   const [numQ, setNumQ] = useState("10");
   const [exam, setExam] = useState("");
   const [loading, setLoading] = useState(false);
+
+  // Update subjects when grade changes
+  useEffect(() => {
+    setSubject(subjectsByGrade[grade][0]);
+  }, [grade]);
 
   const generateExam = async () => {
     setLoading(true);
@@ -28,42 +48,30 @@ export default function Home() {
 
   const formatExam = (text: string) => {
     return text
-     .replace(/\*\*(.*?)\*\*/g, '<strong class="font-bold text-black">$1</strong>')
-     .replace(/###\s*(.*)/g, '<h3 class="font-bold text-lg mt-6 mb-2 text-blue-900">$1</h3>')
-     .replace(/##\s*(.*)/g, '<h2 class="font-bold text-xl mt-6 mb-2">$1</h2>')
-     .replace(/\n/g, '<br/>');
+    .replace(/\*\*(.*?)\*\*/g, '<strong class="font-bold text-black">$1</strong>')
+    .replace(/###\s*(.*)/g, '<h3 class="font-bold text-lg mt-6 mb-2 text-blue-900">$1</h3>')
+    .replace(/##\s*(.*)/g, '<h2 class="font-bold text-xl mt-6 mb-2">$1</h2>')
+    .replace(/\n/g, '<br/>');
   };
 
   return (
     <div className="min-h-screen bg-gray-100 p-4">
       <div className="max-w-6xl mx-auto">
-        <h1 className="text-3xl font-bold text-center mb-2">MtihaniGen AI 🇰🇪</h1>
+        <h1 className="text-3xl font-bold text-center mb-2">MtihaniGen AI KE</h1>
         <p className="text-center text-gray-600 mb-6">Generate CBC KICD Compliant Exams with AI</p>
 
         <div className="grid md:grid-cols-2 gap-6">
-          {/* LEFT FORM */}
           <div className="bg-white p-6 rounded-xl shadow">
             <h2 className="font-bold text-lg mb-4">✨ Generate Real Exam with AI</h2>
 
-            <label className="block text-sm font-medium mb-1">Subject</label>
-            <select value={subject} onChange={(e)=>setSubject(e.target.value)} className="w-full border p-2 rounded mb-3">
-              <option>Mathematics</option><option>English</option><option>Kiswahili</option><option>Science</option><option>Social Studies</option><option>CRE</option><option>Agriculture</option><option>Business Studies</option>
-            </select>
-
             <label className="block text-sm font-medium mb-1">Class</label>
             <select value={grade} onChange={(e)=>setGrade(e.target.value)} className="w-full border p-2 rounded mb-3">
-              <option>Grade 1</option>
-              <option>Grade 2</option>
-              <option>Grade 3</option>
-              <option>Grade 4</option>
-              <option>Grade 5</option>
-              <option>Grade 6</option>
-              <option>Grade 7</option>
-              <option>Grade 8</option>
-              <option>Grade 9</option>
-              <option>Grade 10</option>
-              <option>Grade 11</option>
-              <option>Grade 12</option>
+              {Object.keys(subjectsByGrade).map(g => <option key={g}>{g}</option>)}
+            </select>
+
+            <label className="block text-sm font-medium mb-1">Learning Area / Subject - for {grade}</label>
+            <select value={subject} onChange={(e)=>setSubject(e.target.value)} className="w-full border p-2 rounded mb-3">
+              {subjectsByGrade[grade].map(s => <option key={s}>{s}</option>)}
             </select>
 
             <label className="block text-sm font-medium mb-1">Topic</label>
@@ -77,9 +85,8 @@ export default function Home() {
             </button>
           </div>
 
-          {/* RIGHT PREVIEW */}
           <div className="bg-white p-6 rounded-xl shadow">
-            <h2 className="font-bold text-lg mb-4">Preview</h2>
+            <h2 className="font-bold text-lg mb-4">Preview - {subject} {grade}</h2>
             {!exam && <p className="text-gray-400 text-sm">Preview will appear here after generation</p>}
             {exam && (
               <>
